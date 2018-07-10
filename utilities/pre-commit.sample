@@ -7,4 +7,4 @@
 #
 # To enable this hook, rename this file to "pre-commit".
 
-C:/Users/nosov/AppData/Local/Programs/Python/Python36-32/python.exe  C:/Users/nosov/PycharmProjects/format_test/.git/hooks/pre-commit.py --check
+PATH/python.exe  PATH/utilities/pre-commit.py --check

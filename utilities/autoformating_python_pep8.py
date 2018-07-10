@@ -1,6 +1,17 @@
+"""
+File for autoformating pytohn's file
+Arguments - file files fo formating.
+"""
 import sys
 
-def main(argv=None, apply_config=True):
+
+def main(argv=None):
+    """
+
+    :param argv: name of file for firmatinf
+    :type: list
+    :return: redut code
+    """
     try:
         import autopep8
     except Exception:
@@ -10,9 +21,11 @@ def main(argv=None, apply_config=True):
     if argv is None:
         argv = sys.argv
 
-    autopep8.main(["autopep8","--in-place", "--aggressive", "--aggressive"] + argv[1:])
+    autopep8.main(["autopep8", "--in-place", "--aggressive",
+                   "--aggressive"] + argv[1:])
     return 0
 
 
 if __name__ == '__main__':
+
     sys.exit(main())
