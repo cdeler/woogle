@@ -17,7 +17,6 @@ def shell_command(command):
     :type command: list
     :return: code: int, report: stdout
     """
-
     # Execute subprocess
     proc = Popen(command, stdout=PIPE, stderr=PIPE)
 
@@ -46,7 +45,6 @@ def head_revision():
 
     # set code result
     result_code = 0
-
     # checking existence of git
     code, report = shell_command(
         ['git', '--version'])
@@ -118,16 +116,16 @@ if __name__ == '__main__':
     if code != 0:
         print("Error: can't get file")
         exit(1)
+    if len(targets) != 0:
+        # formating code
+        code = formating_python_code(
+            params.get('exec'),
+            params.get('check')[0],
+            targets)
 
-    # formating code
-    code = formating_python_code(
-        params.get('exec'),
-        params.get('check'),
-        targets)
-
-    if code != 0:
-        print("Error: can't autoformating")
-        exit(1)
+        if code != 0:
+            print("Error: can't autoformating")
+            exit(1)
 
     print("File formated!")
 
