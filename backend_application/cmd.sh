@@ -1,9 +1,6 @@
 #!/bin/bash
-set -e
 
-# while ! curl db:5432; do sleep 3; done
-# while ! nc -z db 5432; do sleep 3; done
-sleep 5
+set -e
 
 if [ "$ENV" = 'DEV' ]; then
   echo "Running Development Server"
