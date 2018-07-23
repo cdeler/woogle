@@ -14,7 +14,6 @@ COPY cmd.sh /
 COPY wait-postgres.sh /
 
 
-EXPOSE 9090 9191
 EXPOSE 8080 8080
 EXPOSE 8000 8000
 USER uwsgi
