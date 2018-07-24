@@ -1,0 +1,19 @@
+version: '2.1'
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    
+  web:
+    build: . 
+    environment:
+      ENV: DEV 
+    volumes:
+      - ./app:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    links:
+      - db

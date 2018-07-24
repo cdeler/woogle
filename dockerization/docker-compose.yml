@@ -1,0 +1,10 @@
+version: '3'
+services:
+  downloading:
+    build: .
+    ports:
+     - "5000:5000"
+
+
+
+
