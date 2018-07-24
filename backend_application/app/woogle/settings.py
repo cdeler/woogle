@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'wikisearch',
 ]
 
 MIDDLEWARE = [
@@ -76,9 +77,10 @@ WSGI_APPLICATION = 'woogle.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'test',
         'USER': 'postgres',
-        'HOST': 'db',
+        'PASSWORD': 'qwerty123',
+        'HOST': '127.0.0.1',
         'PORT': 5432,
     }
 }
@@ -120,4 +122,5 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
-STATIC_URL = '/static/'
+
+STATIC_URL = '/templates/'
