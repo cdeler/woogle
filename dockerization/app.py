@@ -18,7 +18,7 @@ def args2dict(args):
             arg_dict[key] = value
     return arg_dict
 
-
+  
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Run wiki-downloader&parser with given options.',
