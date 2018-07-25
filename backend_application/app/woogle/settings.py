@@ -77,10 +77,9 @@ WSGI_APPLICATION = 'woogle.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'test',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': 'qwerty123',
-        'HOST': '127.0.0.1',
+        'HOST': 'db',
         'PORT': 5432,
     }
 }
@@ -123,4 +122,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 
-STATIC_URL = '/templates/'
+STATIC_URL = '/static/'
