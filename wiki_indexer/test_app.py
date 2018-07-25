@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
 from connector import Connector
-import os
 import connector
 
 class TestApp(unittest.TestCase):
@@ -136,10 +135,6 @@ class TestApp(unittest.TestCase):
             with patch('connector.Connector.es') as mock_es:
                 mock_es.return_value.indices.delete= mock()
                 self.inst.delete_index()
-
-    @classmethod
-    def tearDownClass(cls):
-        os.remove('log.txt')
 
 
 if __name__ == '__main__':
