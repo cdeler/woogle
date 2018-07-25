@@ -18,6 +18,7 @@ class WikiSpider(scrapy.Spider):
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
+
         :param response:
         :return:
         """
@@ -31,6 +32,7 @@ class WikiSpider(scrapy.Spider):
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
+
         :param response:
         :return:
         """

@@ -17,3 +17,5 @@ COPY wait-postgres.sh /
 EXPOSE 8080 8080
 EXPOSE 8000 8000
 USER uwsgi
+
+

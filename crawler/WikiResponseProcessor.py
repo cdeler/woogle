@@ -27,6 +27,7 @@ class WikiResponseProcessor(ABC):
 class FileWikiResponseProcessor(WikiResponseProcessor):
     def process(self, response, path=os.path.join(os.getcwd(), 'texts')):
         """ Method that prints article's snippet to file
+
         :param response:
         :param path:
         :return:
@@ -51,6 +52,7 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
     def process(self, response, n=40):
         """ Method that prints first n symbols of wiki article to stdout
+
         :param response:
         :param n:
         :return:
