@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
+import os
 
 
 class WikiResponseProcessor(ABC):
@@ -9,17 +10,30 @@ class WikiResponseProcessor(ABC):
         pass
 
     @staticmethod
-    def getWikiResponseProcessor():
-        args = 'File'
-        if args == 'File':
-            return FileWikiResponseProcessor()
-        elif args == 'StdOut':
+    def getWikiResponseProcessor(args=None):
+        processor_type = 'FileWRP'
+        try:
+            if args.isdigit():
+                processor_type = 'StdOutWRP'
+        except AttributeError:
+            pass
+
+        if processor_type == 'StdOutWRP':
             return StdOutWikiResponseProcessor()
+        elif processor_type == 'FileWRP':
+            return FileWikiResponseProcessor()
 
 
 class FileWikiResponseProcessor(WikiResponseProcessor):
-    def process(self, response, path=''):
-        with open(f"texts//{response.xpath('//title/text()').extract_first()}.txt", 'w', encoding="utf-8") as output:
+    def process(self, response, path=os.path.join(os.getcwd(), 'texts')):
+        """ Method that prints article's snippet to file
+        :param response:
+        :param path:
+        :return:
+        """
+        path = os.path.join(
+            path, f"{response.xpath('//title/text()').extract_first()}.txt")
+        with open(path, 'w', encoding="utf-8") as output:
             try:
                 text = response.xpath(
                     '//div[@class="mw-parser-output"]').extract()[0]
@@ -36,7 +50,13 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
     def process(self, response, n=40):
+        """ Method that prints first n symbols of wiki article to stdout
+        :param response:
+        :param n:
+        :return:
+        """
         output = ''
+        n = int(n)
         print(response.url)
         try:
             text = response.xpath(

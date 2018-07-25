@@ -1,5 +1,6 @@
 import scrapy
 from WikiResponseProcessor import *
+import os
 
 
 class WikiSpider(scrapy.Spider):
@@ -11,11 +12,15 @@ class WikiSpider(scrapy.Spider):
 
     allowed_domains = ['ru.wikipedia.org', ]
 
-    def __init__(self, **kwargs):
+    def __init__(self, arg=None):
         super(WikiSpider, self).__init__()
-        self.args = kwargs
+        self.args = arg
 
     def parse(self, response):
+        """ Method that parses page of wiki articles' list
+        :param response:
+        :return:
+        """
         yield from self.parse_wiki_pages(response)
 
         next_page = response.xpath(
@@ -25,8 +30,17 @@ class WikiSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
     def parse_wiki_pages(self, response):
-        self.processor = WikiResponseProcessor.getWikiResponseProcessor()
-        self.processor.process(response)
+        """ Method that calls parsing processor for wiki articles
+        :param response:
+        :return:
+        """
+        if self.args:
+            self.processor = WikiResponseProcessor.getWikiResponseProcessor(
+                self.args)
+            self.processor.process(response, self.args)
+        else:
+            self.processor = WikiResponseProcessor.getWikiResponseProcessor()
+            self.processor.process(response)
 
         pages = response.xpath(
             '//ul[@class="mw-allpages-chunk"]//a/@href').extract()

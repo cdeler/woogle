@@ -7,6 +7,6 @@ if [ "$ENV" = 'DEV' ]; then
   exec python "manage.py" runserver 0.0.0.0:8000
 else
   echo "Running Production Server"
-  exec uwsgi --http 0.0.0.0:9090 --wsgi-file /app/manage.py \
-             --callable app --stats 0.0.0.0:9191
+  exec uwsgi --ini /app/woogle/uwsgi.ini --http :8000
+
 fi
