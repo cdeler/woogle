@@ -1,2 +1,0 @@
-Flask==1.0.2
-elasticsearch==6.3.0
