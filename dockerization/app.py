@@ -18,7 +18,7 @@ def args2dict(args):
             arg_dict[key] = value
     return arg_dict
 
-
+  
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Run wiki-downloader&parser with given options.',
@@ -36,4 +36,6 @@ if __name__ == "__main__":
     if arg:
         call(["scrapy", "runspider", "WikiSpider.py", "-a", "arg={}".format(arg)])
     else:
+
         call(["scrapy", "runspider", "WikiSpider.py"])
+
