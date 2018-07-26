@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 import os
 
+from database_binding import insert
+
 
 class WikiResponseProcessor(ABC):
 
@@ -15,6 +17,8 @@ class WikiResponseProcessor(ABC):
         try:
             if args.isdigit():
                 processor_type = 'StdOutWRP'
+            elif args == "db":
+                processor_type = 'DBWRP'
         except AttributeError:
             pass
 
@@ -22,12 +26,13 @@ class WikiResponseProcessor(ABC):
             return StdOutWikiResponseProcessor()
         elif processor_type == 'FileWRP':
             return FileWikiResponseProcessor()
+        elif processor_type == 'DBWRP':
+            return DBResponseProcessor()
 
 
 class FileWikiResponseProcessor(WikiResponseProcessor):
     def process(self, response, path=os.path.join(os.getcwd(), 'texts')):
         """ Method that prints article's snippet to file
-
         :param response:
         :param path:
         :return:
@@ -41,11 +46,10 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
             except IndexError:
                 return 0
             soup = BeautifulSoup(text, 'lxml')
-            paragraph = soup.find('p')
-            while True:
-                output.write(paragraph.text)
-                paragraph = paragraph.nextSibling
-                if paragraph.name != "p":
+            paragraph = soup.select('div.mw-parser-output > p')
+            for p in paragraph:
+                output.write(p.text)
+                if p.nextSibling.name != 'p':
                     break
 
 
@@ -66,12 +70,38 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
         except BaseException:
             return 0
         soup = BeautifulSoup(text, 'lxml')
-        paragraph = soup.find('p')
-        while True:
-            output += paragraph.text
-            if len(output) > n:
-                break
-            paragraph = paragraph.nextSibling
-            if paragraph.name != "p":
+        paragraph = soup.select('div.mw-parser-output > p')
+        for p in paragraph:
+            output += p.text
+            if len(output) > n or p.nextSibling.name != 'p':
                 break
         print(output[:n])
+
+
+class DBResponseProcessor(WikiResponseProcessor):
+    """ Class, which allows to store crawled data in database   """
+
+    def process(self, response, db=True):
+        """ Method that stores data into database
+        :param response
+        :param db
+        :return:
+        """
+
+        title = response.xpath('//title/text()').extract_first()
+        url = response.url
+        content = ''
+        try:
+            text = response.xpath(
+                '//div[@class="mw-parser-output"]').extract()[0]
+        except IndexError:
+            return 0
+
+        soup = BeautifulSoup(text, 'lxml')
+        paragraph = soup.select('div.mw-parser-output > p')
+        for p in paragraph:
+            content += p.text
+            if p.nextSibling.name != 'p':
+                break
+
+        insert(title=title, url=url, text=content)
