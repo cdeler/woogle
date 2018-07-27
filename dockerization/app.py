@@ -6,6 +6,24 @@ MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = ['ru', 'en']
 CHOICE_OUTPUT = ['stdout', 'db', 'directory']
 
+
+def args2dict(args):
+    """
+    Transform string with arguments into dictionary with them.
+
+    :param args: input string.
+    :return: dictionary with parsed arguments
+    """
+    arg_dict = {}
+    for argument in args:
+        key, value = argument.split('=')
+        if value.startswith('\\'):
+            arg_dict[key] = value[1:]
+        else:
+            arg_dict[key] = value
+    return arg_dict
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Run wiki-downloader&parser with given options.',
