@@ -23,11 +23,6 @@ def insert(session, *args, **kwargs):
     session.commit()
 
 
-def delete_all(session):
-    session.query(Article).delete()
-    session.commit()
-
-
 def update(session, id, title, url, text):
     session.query(Article).filter(Article.id == id).update(
         {'title': title, 'url': url, 'text': text})
@@ -42,15 +37,35 @@ def reparse_by_id(session, id):
     DBResponseProcessor().process(response, id_to_update=id)
 
 
-def read(session):
-    articles = session.query(Article)
-    for article in articles:
-        print(article.title)
+def read(session, id=None):
+    if id:
+        print(
+            session.query(
+                Article.title,
+                Article.url,
+                Article.text).filter(
+                Article.id == id).first())
+    else:
+        articles = session.query(Article.title, Article.url, Article.text)
+        for article in articles:
+            print(article)
+
+
+def delete(session, id=None, title=None, url=None):
+    if id:
+        session.query(Article.id).filter(Article.id == id).delete()
+    elif title:
+        session.query(Article.title).filter(Article.title == title).delete()
+    elif url:
+        session.query(Article.url).filter(Article.url == url).delete()
+    else:
+        session.query(Article).delete()
+    session.commit()
 
 
 if __name__ == '__main__':
     session = init_db()
     # insert(session, title="some title", url="some url", text='some text')
-    reparse_by_id(session, 314)
-    # read(session)
-    # delete_all(session)
+    # reparse_by_id(session, 323)
+    read(session)
+    # delete(session, id=349)

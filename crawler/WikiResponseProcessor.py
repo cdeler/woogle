@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 import os
 
-from database_binding import init_db, insert, delete_all, update
+from database_binding import init_db, insert, update
 
 
 class WikiResponseProcessor(ABC):
