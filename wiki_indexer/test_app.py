@@ -68,7 +68,7 @@ class TestApp(unittest.TestCase):
                 with patch('connector.Table') as mocked_table:
                     mocked_table.return_value.columns = [head]
                     inst = Connector("sad", 'sad', 'someesindex', 'sda')
-        self.assertEqual(inst.get_json_from_row((2,['Table'])), {'sad': 'Table',})
+        self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table',})
 
     def test_table_set(self):
         pass

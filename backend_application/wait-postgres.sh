@@ -63,6 +63,3 @@ if [[ $HOST == "" || $PORT == "" ]]; then
 fi
 wait_for "$@"
 
-#apply migrattions for postgres
-exec python manage.py makemigrations
-exec python manage.py migrate
