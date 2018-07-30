@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 import os
 
-from database_binding import init_db, insert, delete_all
+from database_binding import init_db, insert, delete_all, update
 
 
 class WikiResponseProcessor(ABC):
@@ -31,11 +31,13 @@ class WikiResponseProcessor(ABC):
 
 
 class FileWikiResponseProcessor(WikiResponseProcessor):
+    """ Class, which allows to store crawled data in files   """
+
     def process(self, response, path=os.path.join(os.getcwd(), 'texts')):
         """ Method that prints article's snippet to file
-        :param response:
-        :param path:
-        :return:
+        :param response: response to parse
+        :param path: folder to save articles to
+        :return: None
         """
         path = os.path.join(
             path, f"{response.xpath('//title/text()').extract_first()}.txt")
@@ -55,12 +57,14 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
 
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
+    """ Class, which allows to print crawled data to standard output   """
+
     def process(self, response, n=40):
         """ Method that prints first n symbols of wiki article to stdout
 
-        :param response:
-        :param n:
-        :return:
+        :param response: response to parse
+        :param n: number of symbols to print
+        :return: None
         """
         output = ''
         n = int(n)
@@ -83,13 +87,14 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
 class DBResponseProcessor(WikiResponseProcessor):
     """ Class, which allows to store crawled data in database   """
 
-    def process(self, response, db=True):
+    def process(self, response, db=True, id_to_update=None):
         """ Method that stores data into database
-        :param response
-        :param db
-        :return:
-        """
 
+        :param response: response to parse
+        :param db:
+        :param id_to_update: id of record that needs to be updated
+        :return: None
+        """
         title = response.xpath('//title/text()').extract_first()
         url = response.url
         content = ''
@@ -107,4 +112,8 @@ class DBResponseProcessor(WikiResponseProcessor):
                 break
 
         session = init_db()
-        insert(session, title=title, url=url, text=content)
+
+        if id_to_update:
+            update(session, id_to_update, title=title, url=url, text=content)
+        else:
+            insert(session, title=title, url=url, text=content)

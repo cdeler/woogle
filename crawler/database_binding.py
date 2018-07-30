@@ -28,8 +28,10 @@ def delete_all(session):
     session.commit()
 
 
-def update(session):
-    pass
+def update(session, id, title, url, text):
+    session.query(Article).filter(Article.id == id).update(
+        {'title': title, 'url': url, 'text': text})
+    session.commit()
 
 
 def reparse_by_id(session, id):
@@ -37,7 +39,7 @@ def reparse_by_id(session, id):
     url = session.query(Article.url).filter(Article.id == id).first()[0]
     response = requests.get(url)
     response = HtmlResponse(url=url, body=response.content)
-    DBResponseProcessor().process(response)
+    DBResponseProcessor().process(response, id_to_update=id)
 
 
 def read(session):
@@ -49,6 +51,6 @@ def read(session):
 if __name__ == '__main__':
     session = init_db()
     # insert(session, title="some title", url="some url", text='some text')
-    reparse_by_id(session, 300)
+    reparse_by_id(session, 314)
     # read(session)
     # delete_all(session)
