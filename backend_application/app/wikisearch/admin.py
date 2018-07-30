@@ -4,8 +4,8 @@ import requests
 from .models import Article
 
 
-
 from wikisearch.models import Article
+
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
@@ -33,3 +33,4 @@ class ArticleAdmin(admin.ModelAdmin):
 
     reindex.short_description = 'Put article in elastic again'
     reparse.short_description = 'Parse article again in database'
+
