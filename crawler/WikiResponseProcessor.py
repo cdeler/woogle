@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 import os
 
-from database_binding import insert
+from database_binding import init_db, insert, delete_all
 
 
 class WikiResponseProcessor(ABC):
@@ -37,20 +37,33 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
         :param path:
         :return:
         """
-        path = os.path.join(
-            path, f"{response.xpath('//title/text()').extract_first()}.txt")
+        path = os.path.join(path, f"{response.xpath('//title/text()').extract_first()}.txt")
         with open(path, 'w', encoding="utf-8") as output:
             try:
-                text = response.xpath(
-                    '//div[@class="mw-parser-output"]').extract()[0]
+                text = response.xpath('//div[@class="mw-parser-output"]').extract_first()
+                text = response.css('div.mw-parser-output').extract_first()
+                # output.write(text)
             except IndexError:
                 return 0
             soup = BeautifulSoup(text, 'lxml')
-            paragraph = soup.select('div.mw-parser-output > p')
-            for p in paragraph:
-                output.write(p.text)
-                if p.nextSibling.name != 'p':
+            paragraph = soup.find('p', recursive=False)
+            # print(f'\n\n\n{paragraph}\n\n\n')
+            # print(paragraph)
+            print()
+            # paragraph = soup.find('p')
+            # output.write(soup.text)
+            # paragraph = soup.find_next_sibling('p')
+            while True:
+                output.write(paragraph.text)
+                paragraph = paragraph.nextSibling
+                if paragraph.name != "p":
                     break
+
+            # paragraph = soup.select('div.mw-parser-output > p')
+            # for p in paragraph:
+            #     output.write(p.text)
+            #     if p.nextSibling.name != 'p':
+            #         break
 
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
@@ -71,6 +84,7 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
             return 0
         soup = BeautifulSoup(text, 'lxml')
         paragraph = soup.select('div.mw-parser-output > p')
+        # paragraph = soup.find('p')
         for p in paragraph:
             output += p.text
             if len(output) > n or p.nextSibling.name != 'p':
@@ -92,8 +106,7 @@ class DBResponseProcessor(WikiResponseProcessor):
         url = response.url
         content = ''
         try:
-            text = response.xpath(
-                '//div[@class="mw-parser-output"]').extract()[0]
+            text = response.xpath('//div[@class="mw-parser-output"]').extract()[0]
         except IndexError:
             return 0
 
@@ -104,4 +117,5 @@ class DBResponseProcessor(WikiResponseProcessor):
             if p.nextSibling.name != 'p':
                 break
 
-        insert(title=title, url=url, text=content)
+        session = init_db()
+        insert(session, title=title, url=url, text=content)

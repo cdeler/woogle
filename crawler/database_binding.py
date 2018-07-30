@@ -2,10 +2,13 @@ from models import Article, base
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from scrapy.http import HtmlResponse
+import requests
+
+from WikiResponseProcessor import *
 
 
 def init_db():
-
     db_string = "postgres://username:password@localhost/dbname"
     db = create_engine(db_string)
 
@@ -15,30 +18,37 @@ def init_db():
     return session
 
 
-def insert(*args, **kwargs):
-    session = init_db()
+def insert(session, *args, **kwargs):
     session.add(Article(*args, **kwargs))
     session.commit()
 
 
-def delete_all():
-    session = init_db()
+def delete_all(session):
     session.query(Article).delete()
     session.commit()
 
 
-def update():
+def update(session):
     pass
 
 
-def read():
-    session = init_db()
+def reparse_by_id(session, id):
+    # only for database
+    url = session.query(Article.url).filter(Article.id == id).first()[0]
+    response = requests.get(url)
+    response = HtmlResponse(url=url, body=response.content)
+    DBResponseProcessor().process(response)
+
+
+def read(session):
     articles = session.query(Article)
     for article in articles:
         print(article.title)
 
 
 if __name__ == '__main__':
-    insert(title="some title", url="some url", text='some text')
-    read()
-    # delete_all()
+    session = init_db()
+    # insert(session, title="some title", url="some url", text='some text')
+    reparse_by_id(session, 300)
+    # read(session)
+    # delete_all(session)
