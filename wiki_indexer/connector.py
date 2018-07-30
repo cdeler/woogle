@@ -18,7 +18,7 @@ class Connector:
     """
     es = Elasticsearch()
 
-    def __init__(self, database, table,  elastic_index, elastic_doc_type):
+    def __init__(self, database, table, elastic_index, elastic_doc_type):
         """
         Initialize instance.
 
@@ -32,13 +32,13 @@ class Connector:
         :type elastic_doc_type: str.
         :raises :raises: TypeError, DatabaseConnectionError.
         """
-        if not isinstance(database,str):
+        if not isinstance(database, str):
             raise TypeError("database must be str")
-        if not isinstance(table,str):
+        if not isinstance(table, str):
             raise TypeError("table must be str")
-        if not isinstance(elastic_index,str):
+        if not isinstance(elastic_index, str):
             raise TypeError("elastic_index must be str")
-        if not isinstance(elastic_doc_type,str):
+        if not isinstance(elastic_doc_type, str):
             raise TypeError("elastic_doc_type must be str")
 
         try:
@@ -75,7 +75,8 @@ class Connector:
         if row[0] < 0:
             raise ValueError('first value of row must be positive')
 
-        return {self.headers[i].name: row[1][i] for i in range(len(self.headers))}
+        return {self.headers[i].name: row[1][i]
+                for i in range(len(self.headers))}
 
     @property
     def table_set(self):
@@ -99,10 +100,14 @@ class Connector:
         :raise: ElasticConnectionError
         """
         try:
-            self.es.index(index=self.elastic_index, doc_type=self.elastic_doc_type,
-                 id=row[0], body=self.get_json_from_row(row))
+            self.es.index(
+                index=self.elastic_index,
+                doc_type=self.elastic_doc_type,
+                id=row[0],
+                body=self.get_json_from_row(row))
         except Exception as e:
-            raise ElasticConnectionError("Connection to elasticsearch has failed") from e
+            raise ElasticConnectionError(
+                "Connection to elasticsearch has failed") from e
 
     def index(self, threads=20):
         """
@@ -135,9 +140,11 @@ class Connector:
         try:
             self.es.indices.delete(index=self.elastic_index, ignore=[400, 404])
         except Exception as e:
-            raise ElasticConnectionError("Connection to elasticsearch has failed") from e
+            raise ElasticConnectionError(
+                "Connection to elasticsearch has failed") from e
+
 
 if __name__ == '__main__':
-    con = Connector('postgresql:///test','films','test','article')
+    con = Connector('postgresql:///test', 'films', 'test', 'article')
     con.delete_index()
     con.index()

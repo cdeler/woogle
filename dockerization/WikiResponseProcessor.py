@@ -87,7 +87,8 @@ class DBResponseProcessor(WikiResponseProcessor):
 
     def __init__(self):
         # names of existing database should be here to establish connection
-        self.connection = psycopg2.connect(f"host='localhost' dbname='dbname' user='username' password='password'")
+        self.connection = psycopg2.connect(
+            f"host='localhost' dbname='dbname' user='username' password='password'")
 
     def process(self, response, db=True):
         """ Method that stores data into database
@@ -103,7 +104,7 @@ class DBResponseProcessor(WikiResponseProcessor):
         content = ''
         try:
             text = response.xpath(
-                    '//div[@class="mw-parser-output"]').extract()[0]
+                '//div[@class="mw-parser-output"]').extract()[0]
         except IndexError:
             return 0
 
@@ -118,7 +119,8 @@ class DBResponseProcessor(WikiResponseProcessor):
         values = (title, url, content, 0)
         mark = self.connection.cursor()
         # wikitable must be replaced by the real name of the table
-        statement = 'INSERT INTO wikitable (' + columns + ') VALUES (%s,%s,%s,%s)'
+        statement = 'INSERT INTO wikitable (' + \
+            columns + ') VALUES (%s,%s,%s,%s)'
 
         mark.execute(statement, values)
         self.connection.commit()
