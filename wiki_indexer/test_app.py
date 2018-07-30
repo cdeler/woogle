@@ -81,6 +81,7 @@ class TestApp(unittest.TestCase):
                     inst = Connector("sad", 'sad', 'someesindex', 'sda')
         self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table',})
 
+
     def test_table_set(self):
         pass
 

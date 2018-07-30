@@ -97,7 +97,8 @@ class Connector:
         """
         try:
             self.es.index(index=self.elastic_index, doc_type=self.elastic_doc_type,
-                 id=row[self.primary_key], body=self.get_json_from_row(row)
+                 id=row[self.primary_key], body=self.get_json_from_row(row))
+
         except Exception as e:
             raise ElasticConnectionError(
                 "Connection to elasticsearch has failed") from e

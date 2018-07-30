@@ -33,3 +33,4 @@ class ArticleAdmin(admin.ModelAdmin):
 
     reindex.short_description = 'Put article in elastic again'
     reparse.short_description = 'Parse article again in database'
+
