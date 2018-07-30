@@ -151,9 +151,10 @@ class TestApp(unittest.TestCase):
         with patch('connector.create_engine') as mocked_engine:
             with patch('connector.MetaData') as mocked_metadata:
                 with patch('connector.Table') as mocked_table:
-                    mocked_table.return_value.primary_key.columns.values()[0].name = 'id'
-                    inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
-                    self.assertEqual(inst.index_by_id(2), None)
+                    with patch('connector.Elasticsearch') as es_mocked:
+                        es_mocked.return_value.index = None
+                        inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
+                        self.assertEqual(inst.index_by_id(2), None)
 
 
 
