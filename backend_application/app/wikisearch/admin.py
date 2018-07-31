@@ -1,7 +1,9 @@
 from django.contrib import admin
 import requests
 # Register your models here.
-from .models import Article
+from wikisearch.models import Article
+from wikicrawler.database_binding import init_db, reparse_by_id
+
 
 
 from wikisearch.models import Article
@@ -30,6 +32,10 @@ class ArticleAdmin(admin.ModelAdmin):
 
     def reparse(self, request, queryset):
         pass
+        # result = True
+        for row in queryset.values('id'):
+            s = init_db()
+            reparse_by_id(s,row['id'])
 
     reindex.short_description = 'Put article in elastic again'
     reparse.short_description = 'Parse article again in database'
