@@ -72,4 +72,5 @@ if __name__ == "__main__":
     # call crawler with given parameters
     # command for running looks like: scrapy runspider spider.py -a [arg1=val1
     # arg2=val2 ...]
-    call(["scrapy", "runspider", "WikiSpider.py", "-a", arguments_for_crawler])
+    call(["scrapy", "runspider", "WikiSpider.py",
+          "-a", f'arg={arguments_for_crawler}'])
