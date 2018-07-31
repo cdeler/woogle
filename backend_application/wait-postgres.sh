@@ -62,3 +62,4 @@ if [[ $HOST == "" || $PORT == "" ]]; then
   usage
 fi
 wait_for "$@"
+

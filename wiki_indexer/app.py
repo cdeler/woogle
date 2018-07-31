@@ -22,11 +22,13 @@ def get_tasks():
             conn.index()
         elif request.data.decode('ascii') == 'delete':
             conn.delete_index()
+        elif request.data.decode('ascii').isdigit():
+            conn.index_by_id(request.data.decode('ascii'))
         else:
             return abort(400)
         return f'{request.data.decode("ascii")} is executed'
     except Exception as e:
-        self.ROOT_LOGGER.exception(f'error {type(e).__name__}: {e.args[0]}')
+        ROOT_LOGGER.exception(f'error {type(e).__name__}: {e.args[0]}')
 
 
 if __name__ == '__main__':

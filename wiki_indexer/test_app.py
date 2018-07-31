@@ -79,29 +79,8 @@ class TestApp(unittest.TestCase):
                 with patch('connector.Table') as mocked_table:
                     mocked_table.return_value.columns = [head]
                     inst = Connector("sad", 'sad', 'someesindex', 'sda')
-        self.assertEqual(
-            inst.get_json_from_row(
-                (2, ['Table'])), {
-                'sad': 'Table', })
+        self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table',})
 
-    def test_get_json_from_row_with_wrong_row_negative(self):
-        with self.assertRaises(TypeError) as raised_exc:
-            self.inst.get_json_from_row(213)
-        self.assertEqual(raised_exc.exception.args[0], 'row must be tuple')
-
-    def test_get_json_from_row_with_wrong_first_arg_negative(self):
-        with self.assertRaises(TypeError) as raised_exc:
-            self.inst.get_json_from_row(([],))
-        self.assertEqual(
-            raised_exc.exception.args[0],
-            'first arg of row must be int')
-
-    def test_get_json_from_row_with_negarive_firsta_argument(self):
-        with self.assertRaises(ValueError) as raised_exc:
-            self.inst.get_json_from_row((-213,))
-        self.assertEqual(
-            raised_exc.exception.args[0],
-            'first value of row must be positive')
 
     def test_table_set(self):
         pass
@@ -158,6 +137,25 @@ class TestApp(unittest.TestCase):
             with patch('connector.Connector.es') as mock_es:
                 mock_es.return_value.indices.delete = mock()
                 self.inst.delete_index()
+
+    def test_primary_key(self):
+        with patch('connector.create_engine') as mocked_engine:
+            with patch('connector.MetaData') as mocked_metadata:
+                with patch('connector.Table') as mocked_table:
+                    mocked_table.return_value.primary_key.columns.values()[0].name = 'id'
+                    inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
+                    self.assertEqual(inst.primary_key, 'id')
+
+
+    def test_index_by_id(self):
+        with patch('connector.create_engine') as mocked_engine:
+            with patch('connector.MetaData') as mocked_metadata:
+                with patch('connector.Table') as mocked_table:
+                    with patch('connector.Connector.es') as es_mocked:
+                        es_mocked.return_value.index = None
+                        inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
+                        self.assertEqual(inst.index_by_id(2), None)
+
 
 
 if __name__ == '__main__':
