@@ -1,5 +1,5 @@
 import scrapy
-from WikiResponseProcessor import *
+from WikiResponseProcessor import WikiResponseProcessor
 
 
 class WikiSpider(scrapy.Spider):

@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from scrapy.http import HtmlResponse
 import requests
 
-from WikiResponseProcessor import *
+from WikiResponseProcessor import DBResponseProcessor
 
 
 def init_db():
@@ -16,6 +16,30 @@ def init_db():
     session = Session()
     base.metadata.create_all(db)
     return session
+
+
+def read(session, id=None, title=None, url=None):
+    if id:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.id == id).first()
+    elif title:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.title == title).first()
+    elif url:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.url == url).first()
+    else:
+        articles = session.query(Article.title, Article.url, Article.text)
+        return articles
 
 
 def insert(session, *args, **kwargs):
@@ -30,25 +54,10 @@ def update(session, id, title, url, text):
 
 
 def reparse_by_id(session, id):
-    # only for database
     url = session.query(Article.url).filter(Article.id == id).first()[0]
     response = requests.get(url)
     response = HtmlResponse(url=url, body=response.content)
     DBResponseProcessor().process(response, id_to_update=id)
-
-
-def read(session, id=None):
-    if id:
-        print(
-            session.query(
-                Article.title,
-                Article.url,
-                Article.text).filter(
-                Article.id == id).first())
-    else:
-        articles = session.query(Article.title, Article.url, Article.text)
-        for article in articles:
-            print(article)
 
 
 def delete(session, id=None, title=None, url=None):
@@ -65,7 +74,15 @@ def delete(session, id=None, title=None, url=None):
 
 if __name__ == '__main__':
     session = init_db()
+    # dict = {'title':"some title", 'url':"some url", 'text':'some text'}
+    # insert(session, **dict)
+    # columns = ('title', 'url', 'text')
+    # input_data = ('some title', 'some url', 'some text')
+    # input_row = {k: v for k, v in zip(columns, input_data)}
+    # id = 500
+    # insert(session, id=id, **input_row)
     # insert(session, title="some title", url="some url", text='some text')
-    # reparse_by_id(session, 323)
-    read(session)
+    reparse_by_id(session, 345)
+    # print(read(session, title='some title'))
+    # print(read(session, id=5))
     # delete(session, id=349)

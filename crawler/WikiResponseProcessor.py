@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 import os
 
-from database_binding import init_db, insert, update
+import database_binding
 
 
 class WikiResponseProcessor(ABC):
@@ -111,9 +111,15 @@ class DBResponseProcessor(WikiResponseProcessor):
             if p.nextSibling.name != 'p':
                 break
 
-        session = init_db()
+        session = database_binding.init_db()
 
         if id_to_update:
-            update(session, id_to_update, title=title, url=url, text=content)
+            database_binding.update(
+                session,
+                id_to_update,
+                title=title,
+                url=url,
+                text=content)
         else:
-            insert(session, title=title, url=url, text=content)
+            database_binding.insert(
+                session, title=title, url=url, text=content)
