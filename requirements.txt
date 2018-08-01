@@ -1,5 +1,5 @@
 Flask
 elasticsearch
-Scrapy
+Scrapy==1.5.0
 sqlalchemy
 requests
