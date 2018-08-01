@@ -62,7 +62,6 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
         """
         output = ''
         n = int(n)
-        print(response.url)
         try:
             text = response.xpath(
                 '//div[@class="mw-parser-output"]').extract()[0]

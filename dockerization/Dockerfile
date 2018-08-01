@@ -8,4 +8,5 @@ ADD . /app
 EXPOSE 80
 
 RUN pip3 install -r requirements.txt
-RUN pip3 install git+https://github.com/lopuhin/twisted.git@9384-remove-async-param
+
+RUN pip3 install  git+https://github.com/twisted/twisted.git@9384-remove-async-param
