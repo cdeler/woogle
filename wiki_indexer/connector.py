@@ -18,7 +18,7 @@ class Connector:
     """
     es = Elasticsearch()
 
-    def __init__(self, database, table,  elastic_index, elastic_doc_type):
+    def __init__(self, database, table, elastic_index, elastic_doc_type):
         """
         Initialize instance.
 
@@ -32,13 +32,13 @@ class Connector:
         :type elastic_doc_type: str.
         :raises :raises: TypeError, DatabaseConnectionError.
         """
-        if not isinstance(database,str):
+        if not isinstance(database, str):
             raise TypeError("database must be str")
-        if not isinstance(table,str):
+        if not isinstance(table, str):
             raise TypeError("table must be str")
-        if not isinstance(elastic_index,str):
+        if not isinstance(elastic_index, str):
             raise TypeError("elastic_index must be str")
-        if not isinstance(elastic_doc_type,str):
+        if not isinstance(elastic_doc_type, str):
             raise TypeError("elastic_doc_type must be str")
 
         try:
@@ -59,6 +59,10 @@ class Connector:
         """
         return tuple(x for x in self.table.columns)
 
+    @property
+    def primary_key(self):
+        return self.table.primary_key.columns.values()[0].name
+
     def get_json_from_row(self, row):
         """
         Method that unites headers of a table with a row value.
@@ -68,14 +72,7 @@ class Connector:
         :returns: dict - that represent json
         :raises: TypeError, ValueError.
         """
-        if not isinstance(row, tuple):
-            raise TypeError("row must be tuple")
-        if not isinstance(row[0], int):
-            raise TypeError('first arg of row must be int')
-        if row[0] < 0:
-            raise ValueError('first value of row must be positive')
-
-        return {self.headers[i].name: row[1][i] for i in range(len(self.headers))}
+        return {self.headers[i].name: row[i] for i in range(len(self.headers))}
 
     @property
     def table_set(self):
@@ -100,9 +97,11 @@ class Connector:
         """
         try:
             self.es.index(index=self.elastic_index, doc_type=self.elastic_doc_type,
-                 id=row[0], body=self.get_json_from_row(row))
+                 id=row[self.primary_key], body=self.get_json_from_row(row))
+
         except Exception as e:
-            raise ElasticConnectionError("Connection to elasticsearch has failed") from e
+            raise ElasticConnectionError(
+                "Connection to elasticsearch has failed") from e
 
     def index(self, threads=20):
         """
@@ -121,7 +120,7 @@ class Connector:
             raise ValueError("number of threads must be more than 1")
 
         pool = ThreadPool(threads)
-        pool.map(self._index, enumerate(self.table_set))
+        pool.map(self._index, self.table_set)
         pool.close()
         pool.join()
 
@@ -135,9 +134,17 @@ class Connector:
         try:
             self.es.indices.delete(index=self.elastic_index, ignore=[400, 404])
         except Exception as e:
-            raise ElasticConnectionError("Connection to elasticsearch has failed") from e
+            raise ElasticConnectionError(
+                "Connection to elasticsearch has failed") from e
+
+
+    def index_by_id(self, id):
+        with self.engine.connect() as conn:
+            select_statement = self.table.select().where(self.table.c.id == id)
+            result_set = conn.execute(select_statement).fetchone()
+            self._index(result_set)
 
 if __name__ == '__main__':
-    con = Connector('postgresql:///test','films','test','article')
-    con.delete_index()
-    con.index()
+    con = Connector('postgresql:///test','wikisearch_article','test','article')
+    con.index_by_id(2)
+

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from wikisearch.models import Article
 # Create your views here.
 
-from django.views.generic.list import  ListView
+from django.views.generic.list import ListView
 
 
 class ArticleListView(ListView):
