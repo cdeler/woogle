@@ -149,8 +149,6 @@ li {
         {% csrf_token%}
         {{form}}
         <input type="submit" value="Search" id="submit">
-    </form> <span class="subtitle">{{ art.temperature }}°==</span>
-                        <br> {{ art.description }}
 <ul>
 {% for article in article_list %}
      <li>
