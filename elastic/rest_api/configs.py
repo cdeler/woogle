@@ -2,8 +2,6 @@ import os
 import configparser
 import functools
 
-import service
-
 
 def singleton(cls):
     """
@@ -47,4 +45,4 @@ class Config(object):
             self.api_host = config.get("rest_api", "host")
             self.api_port = config.get("rest_api", "port")
         except configparser.Error as e:
-            service.debug_output(str(e))
+            print(str(e))

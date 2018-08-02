@@ -6,7 +6,9 @@ services:
     container_name: rest_api
     restart: always
     environment:
-      BUILD: "FALSE"
+      MAPPING: "True"
+      DELETE: "False"
+      DATA: "True"
     ports:
       - "5000:5000"
     expose:

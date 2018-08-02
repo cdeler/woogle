@@ -10,14 +10,12 @@ import asyncio
 from aiohttp import web
 
 from connector import Connector
-import setting
 import configs
 
 
 CONNECTOR = Connector
 ROOT_LOGGER = logging.getLogger()
 DISTRO_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-
 
 
 @asyncio.coroutine
@@ -100,7 +98,9 @@ def waiting_connection_with_es(elastic_host: str, elastic_port: int):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="http server for elasticsearch")
     parser.add_argument("--verbose", help="enable debug mode", action="store_true")
-    parser.add_argument("--build_es", help="create index with mapping and setting up es", default=False)
+    parser.add_argument("--mapping", type=bool, help="create index with mapping and setting up es", default=False)
+    parser.add_argument("--delete", type=bool, help="delete data and index", default=False)
+    parser.add_argument("--data", type=bool, help="add simple data_files in ES", default=False)
     args = parser.parse_args()
 
     # read the configuration settings
@@ -108,11 +108,6 @@ if __name__ == '__main__':
 
     # waiting connection
     waiting_connection_with_es(conf.elastic_host, conf.elastic_port)
-
-    # setting es and create index with mapping
-    # broadcast a request for creating a mapping and settings via a connector
-    # if args.build_es:
-    #     setting.create_index()
 
     # configuration logger
     if args.verbose:
