@@ -11,16 +11,22 @@ class WikiResponseProcessor(ABC):
 
     @staticmethod
     def getWikiResponseProcessor(args=None):
-        processor_type = 'FileWRP'
-        try:
-            if args.isdigit():
-                processor_type = 'StdOutWRP'
-        except AttributeError:
-            pass
 
-        if processor_type == 'StdOutWRP':
-            return StdOutWikiResponseProcessor()
-        elif processor_type == 'FileWRP':
+        if args is not None and 'output' in args:
+            mode_output = args['output']
+
+            if mode_output == 'stdout':
+                return StdOutWikiResponseProcessor()
+            elif mode_output == 'directory':
+                return FileWikiResponseProcessor()
+            elif mode_output == 'db':
+                # code for output in db
+                print("Output mode: data base")
+                pass
+            else:
+                raise ValueError(
+                    f"Invalid mode output - {args['output']}. Correct value of argument 'output' - stdout, db, directory ")
+        else:
             return FileWikiResponseProcessor()
 
 
@@ -50,16 +56,16 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
 
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
-    def process(self, response, n=40):
+    def process(self, response, n=40, silent="False"):
         """ Method that prints first n symbols of wiki article to stdout
 
         :param response:
         :param n:
+        :param silent:
         :return:
         """
         output = ''
         n = int(n)
-        print(response.url)
         try:
             text = response.xpath(
                 '//div[@class="mw-parser-output"]').extract()[0]
@@ -74,4 +80,6 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
             paragraph = paragraph.nextSibling
             if paragraph.name != "p":
                 break
-        print(output[:n])
+
+        if silent == "False":
+            print("\n------\n", response.url, '\n', output[:n], "\n------\n")
