@@ -2,8 +2,9 @@ import argparse
 import functools
 from subprocess import call
 
+import crawler.setting_language as setting
 MAX_COUNT_THREADS = 10
-CHOICE_LANGUAGE = ['ru', 'en']
+CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
 CHOICE_OUTPUT = ['stdout', 'db', 'directory']
 
 
@@ -44,14 +45,14 @@ if __name__ == "__main__":
     parser.add_argument(
         '-l',
         '--language',
-        help='wikipedia language (default: ru)',
+        help=f'wikipedia language (default: {CHOICE_LANGUAGE[0]})',
         type=str,
         choices=CHOICE_LANGUAGE,
         default=CHOICE_LANGUAGE[0])
     parser.add_argument(
         '-o',
         '--output',
-        help='output (default: stdout)',
+        help=f'output (default: {CHOICE_OUTPUT[0]})',
         type=str,
         choices=CHOICE_OUTPUT,
         default=CHOICE_OUTPUT[0])

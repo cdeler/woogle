@@ -1,5 +1,9 @@
 import scrapy
+
+
 from WikiResponseProcessor import *
+import crawler.setting_language as setting
+
 import os
 
 
@@ -21,12 +25,6 @@ def arg_str2dict(arg):
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
-    start_urls = [
-        'https://ru.wikipedia.org/w/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D1%81%D0%B5_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D1%8B',
-    ]
-
-    allowed_domains = ['ru.wikipedia.org', ]
-
     def __init__(self, arg=None):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
@@ -43,23 +41,39 @@ class WikiSpider(scrapy.Spider):
         else:
             self.args = arg
 
+        # setup language setting
+        languages = list(setting.LANGUAGE_SETTING.keys())
+        # defailt index
+        choose_language = languages[0]
+        if 'language' in self.args:
+            for language in languages:
+                if language == self.args['language']:
+                    choose_language == language
+                    break
+            else:
+                raise ValueError(
+                    f"Value of argument 'language' - {self.args['language']} is invalid. Correct value - {languages}")
+
+        self.start_urls = [setting.LANGUAGE_SETTING[language]['start_urls']]
+        self.allowed_domains = [
+            setting.LANGUAGE_SETTING[language]['allowed_domains']]
+        self.next_page_words = setting.LANGUAGE_SETTING[language]['next_page_words']
+
     def parse(self, response):
         """ Method that parses page of wiki articles' list
-
         :param response:
         :return:
         """
         yield from self.parse_wiki_pages(response)
 
         next_page = response.xpath(
-            '//a[contains(text(), "Следующая страница")]/@href').extract_first()
+            f'//a[contains(text(), "{self.next_page_words}")]/@href').extract_first()
 
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
-
         :param response:
         :return:
         """
@@ -68,7 +82,8 @@ class WikiSpider(scrapy.Spider):
             self.args)
 
         # if output=stdout
-        if self.args is not None and 'output' in self.args and 'silent' in self.args:
+        if self.args is not None and 'output' in self.args and self.args[
+                'output'] == 'stdout' and 'silent' in self.args:
             self.processor.process(response, silent=self.args['silent'])
         else:
             self.processor.process(response)
