@@ -19,6 +19,15 @@ def arg_str2dict(arg):
         raise TypeError(
             "Invalid format argument:\n f{arg} \n Correct format: 'arg1=va1 arg2=val2 ...' ") from e
 
+    if 'silent' in arg_dict:
+        if arg_dict['silent'] == "False":
+            arg_dict['silent'] = False
+        elif arg_dict['silent'] == "True":
+            arg_dict['silent'] = True
+        else:
+            raise ValueError(
+                f"Invalid mode silent - {arg_dict['silent']}. Correct value of argument 'silent' - True, False ")
+
     return arg_dict
 
 
