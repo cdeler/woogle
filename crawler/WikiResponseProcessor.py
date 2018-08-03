@@ -56,7 +56,7 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
 
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
-    def process(self, response, n=40, silent="False"):
+    def process(self, response, n=40, silent=False):
         """ Method that prints first n symbols of wiki article to stdout
 
         :param response:
@@ -81,5 +81,5 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
             if paragraph.name != "p":
                 break
 
-        if silent == "False":
+        if not silent:
             print("\n------\n", response.url, '\n', output[:n], "\n------\n")
