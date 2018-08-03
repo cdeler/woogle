@@ -31,6 +31,23 @@ def arg_str2dict(arg):
     return arg_dict
 
 
+def choose_language(arg):
+    # setup language setting
+    languages = list(setting.LANGUAGE_SETTING.keys())
+
+    # default
+    language_default = languages[0]
+
+    if arg is not None and 'language' in arg:
+        if arg['language'] in languages:
+            return arg['language']
+        else:
+            raise ValueError(
+                f"Value of argument 'language' - {self.args['language']} is invalid. Correct value - {languages}")
+    else:
+        return language_default
+
+
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
@@ -51,22 +68,13 @@ class WikiSpider(scrapy.Spider):
             self.args = arg
 
         # setup language setting
-        languages = list(setting.LANGUAGE_SETTING.keys())
-        # defailt index
-        choose_language = languages[0]
-        if 'language' in self.args:
-            for language in languages:
-                if language == self.args['language']:
-                    choose_language == language
-                    break
-            else:
-                raise ValueError(
-                    f"Value of argument 'language' - {self.args['language']} is invalid. Correct value - {languages}")
+        self.language = choose_language(self.args)
 
-        self.start_urls = [setting.LANGUAGE_SETTING[language]['start_urls']]
+        self.start_urls = [
+            setting.LANGUAGE_SETTING[self.language]['start_urls']]
         self.allowed_domains = [
-            setting.LANGUAGE_SETTING[language]['allowed_domains']]
-        self.next_page_words = setting.LANGUAGE_SETTING[language]['next_page_words']
+            setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
+        self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
