@@ -145,14 +145,14 @@ li {
 </head>
 <body>
 {#    search form     #}
-    <form class="form-wrapper">
-        <input type="text" id="search" placeholder="Search for..." required>
+    <form class="form-wrapper"  method="GET">
+        {% csrf_token%}
+        {{form}}
         <input type="submit" value="Search" id="submit">
-    </form>
 <ul>
 {% for article in article_list %}
      <li>
-    <h3><a href={{article.url}}> {{article.title}}</a></h3>
+    <h3><a href={{article.url}} > {{article.title}}</a></h3>
       <p>{{article.text}}</p>
    </li>
 {% empty %}
@@ -176,6 +176,7 @@ li {
       </div>
   {% endif %}
 {% endblock %}
+
 
 
 </section>
