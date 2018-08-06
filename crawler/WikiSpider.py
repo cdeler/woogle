@@ -3,6 +3,30 @@ from WikiResponseProcessor import *
 import os
 
 
+def arg_str2dict(arg):
+    """
+    Converting argument from "arg1=va1 arg2=val2 ..." to dict {arg1:va1, arg2:val2, ...}
+    :param args: str
+    :return: dict
+    """
+    try:
+        arg_dict = {i.split('=')[0]: i.split('=')[1] for i in arg.split()}
+    except Exception as e:
+        raise TypeError(
+            "Invalid format argument:\n f{arg} \n Correct format: 'arg1=va1 arg2=val2 ...' ") from e
+
+    if 'silent' in arg_dict:
+        if arg_dict['silent'] == "False":
+            arg_dict['silent'] = False
+        elif arg_dict['silent'] == "True":
+            arg_dict['silent'] = True
+        else:
+            raise ValueError(
+                f"Invalid mode silent - {arg_dict['silent']}. Correct value of argument 'silent' - True, False ")
+
+    return arg_dict
+
+
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
@@ -13,8 +37,20 @@ class WikiSpider(scrapy.Spider):
     allowed_domains = ['ru.wikipedia.org', ]
 
     def __init__(self, arg=None):
+        """
+        Getting next arguments in format: arg1=va1 arg2=val2 ...":
+            num_threads: count threads
+            language: wikipedia language (ru, en)
+            output: output (stdout, db, directory)
+            silent: flag, turn on silent mode, use with output=stdout
+        :param arg: agrument for crawler
+        :type arg: str
+        """
         super(WikiSpider, self).__init__()
-        self.args = arg
+        if arg is not None:
+            self.args = arg_str2dict(arg)
+        else:
+            self.args = arg
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
@@ -36,12 +72,14 @@ class WikiSpider(scrapy.Spider):
         :param response:
         :return:
         """
-        if self.args:
-            self.processor = WikiResponseProcessor.getWikiResponseProcessor(
-                self.args)
-            self.processor.process(response, self.args)
+
+        self.processor = WikiResponseProcessor.getWikiResponseProcessor(
+            self.args)
+
+        # if output=stdout
+        if self.args is not None and 'output' in self.args and 'silent' in self.args:
+            self.processor.process(response, silent=self.args['silent'])
         else:
-            self.processor = WikiResponseProcessor.getWikiResponseProcessor()
             self.processor.process(response)
 
         pages = response.xpath(
