@@ -6,3 +6,4 @@ aiohttp
 numpy
 scrapy
 bs4
+psycopg2
