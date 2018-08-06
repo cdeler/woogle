@@ -29,7 +29,7 @@ def pageRank(M, d=0.85, squere_error=1e-6):
         v = M_hat.dot(v)
     return v
 
-ses = init_db()
+
 
 
 def create_graph(ses):
@@ -102,7 +102,7 @@ def main():
         update_page_rank(ses, i, j)
 
 if __name__ == '__main__':
-
+    ses = init_db()
     start = time()
     result = main()
     duration = time() - start
