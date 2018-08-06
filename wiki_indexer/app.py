@@ -4,6 +4,7 @@ import configparser
 import connector
 import logging
 
+
 application = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('app.ini')
@@ -22,12 +23,14 @@ def get_tasks():
             conn.index()
         elif request.data.decode('ascii') == 'delete':
             conn.delete_index()
+        elif request.data.decode('ascii').isdigit():
+            conn.index(request.data.decode('ascii'))
         else:
             return abort(400)
         return f'{request.data.decode("ascii")} is executed'
     except Exception as e:
-        self.ROOT_LOGGER.exception(f'error {type(e).__name__}: {e.args[0]}')
+        ROOT_LOGGER.exception(f'error {type(e).__name__}: {e.args[0]}')
+
 
 if __name__ == '__main__':
     application.run(threaded=True, host='0.0.0.0', port=9999)
-

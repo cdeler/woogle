@@ -13,6 +13,7 @@ class WikiResponseProcessor(ABC):
 
     @staticmethod
     def getWikiResponseProcessor(args=None):
+      
         if args is not None and 'output' in args:
             mode_output = args['output']
 
@@ -22,6 +23,7 @@ class WikiResponseProcessor(ABC):
                 return FileWikiResponseProcessor()
             elif mode_output == 'db':
                 return DBResponseProcessor()
+
             else:
                 raise ValueError(
                     f"Invalid mode output - {args['output']}. Correct value of argument 'output' - stdout, db, directory ")
@@ -72,6 +74,7 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
         :param n: number of symbols to print
         :param silent:
         :return: None
+
         """
         output = ''
         n = int(n)

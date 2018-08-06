@@ -2,7 +2,9 @@ from sqlalchemy import create_engine, MetaData, Table, engine
 from elasticsearch import Elasticsearch
 from multiprocessing.pool import ThreadPool
 import sqlalchemy
-
+import requests
+import asyncio
+import aiohttp
 
 class DatabaseConnectionError(Exception):
     pass
@@ -18,7 +20,7 @@ class Connector:
     """
     es = Elasticsearch()
 
-    def __init__(self, database, table,  elastic_index, elastic_doc_type):
+    def __init__(self, database, table, elastic_index, elastic_doc_type):
         """
         Initialize instance.
 
@@ -32,13 +34,13 @@ class Connector:
         :type elastic_doc_type: str.
         :raises :raises: TypeError, DatabaseConnectionError.
         """
-        if not isinstance(database,str):
+        if not isinstance(database, str):
             raise TypeError("database must be str")
-        if not isinstance(table,str):
+        if not isinstance(table, str):
             raise TypeError("table must be str")
-        if not isinstance(elastic_index,str):
+        if not isinstance(elastic_index, str):
             raise TypeError("elastic_index must be str")
-        if not isinstance(elastic_doc_type,str):
+        if not isinstance(elastic_doc_type, str):
             raise TypeError("elastic_doc_type must be str")
 
         try:
@@ -59,6 +61,10 @@ class Connector:
         """
         return tuple(x for x in self.table.columns)
 
+    @property
+    def primary_key(self):
+        return self.table.primary_key.columns.values()[0].name
+
     def get_json_from_row(self, row):
         """
         Method that unites headers of a table with a row value.
@@ -68,14 +74,7 @@ class Connector:
         :returns: dict - that represent json
         :raises: TypeError, ValueError.
         """
-        if not isinstance(row, tuple):
-            raise TypeError("row must be tuple")
-        if not isinstance(row[0], int):
-            raise TypeError('first arg of row must be int')
-        if row[0] < 0:
-            raise ValueError('first value of row must be positive')
-
-        return {self.headers[i].name: row[1][i] for i in range(len(self.headers))}
+        return {self.headers[i].name: row[i] for i in range(len(self.headers))}
 
     @property
     def table_set(self):
@@ -89,41 +88,53 @@ class Connector:
             result_set = conn.execute(select_statement)
         return result_set
 
-    def _index(self, row):
-        """
-        Method that put json into index in elasticsearch.
 
-        :param row: row from table.
-        :type row: sqlalchemy.engine.RowProxy.
+    async def _index(self, row):
+        """
+        Method that send single requests to index service.
+
+        :param row: sqlalchemy.RowProxy
         :return: None
-        :raise: ElasticConnectionError
         """
-        try:
-            self.es.index(index=self.elastic_index, doc_type=self.elastic_doc_type,
-                 id=row[0], body=self.get_json_from_row(row))
-        except Exception as e:
-            raise ElasticConnectionError("Connection to elasticsearch has failed") from e
+        url = "http://127.0.0.1:5000/"
 
-    def index(self, threads=20):
+        querystring = {
+            "index": self.elastic_index,
+            "doc_type": self.elastic_doc_type,
+            "id": row[self.primary_key],
+            "params": f'{self.get_json_from_row(row)}'}
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(url, json=querystring) as resp:
+                    data = await resp.text()
+                    print(data)
+            except aiohttp.client_exceptions.ClientOSError:
+                pass
+
+        response = requests.request("POST", url, params=querystring)
+        return response.content
+
+    def index(self, id=None):
         """
-        Method that put table into index in elasticsearch in multythreading way.
+        Method that create event_loop for asuc sending.
 
-        :param threads: amount of threads.
-        :type threads: int.
-        :returns: None.
-        :raises: TypeError, ValueError.
+        :param id: id of seperate article.
+        :return: None.
         """
-        if not isinstance(threads, int):
-            raise TypeError("threads must be int")
-        if threads < 0:
-            raise ValueError("threads must be positive")
-        if threads == 0:
-            raise ValueError("number of threads must be more than 1")
+        set = None
+        features = []
+        if id:
+            with self.engine.connect() as conn:
+                select_statement = self.table.select().where(self.table.c.id == id)
+                set = conn.execute(select_statement).fetchone()
+        else:
+            set = self.table_set
 
-        pool = ThreadPool(threads)
-        pool.map(self._index, enumerate(self.table_set))
-        pool.close()
-        pool.join()
+        for row in set:
+            features.append(self._index(row))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.wait(features))
 
     def delete_index(self):
         """
@@ -135,9 +146,11 @@ class Connector:
         try:
             self.es.indices.delete(index=self.elastic_index, ignore=[400, 404])
         except Exception as e:
-            raise ElasticConnectionError("Connection to elasticsearch has failed") from e
+            raise ElasticConnectionError(
+                "Connection to elasticsearch has failed") from e
+
 
 if __name__ == '__main__':
-    con = Connector('postgresql:///test','films','test','article')
-    con.delete_index()
+    con = Connector('postgresql:///test','wiki','test','article')
     con.index()
+
