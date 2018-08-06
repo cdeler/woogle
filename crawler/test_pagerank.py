@@ -10,7 +10,7 @@ class TestPagerank(unittest.TestCase):
             with patch('pagerank.get_links_url') as scammed_urls:
                 scammed_urls.return_value = ['Nikita','Nikita']
                 ses = pagerank.init_db()
-                self.assertEqual(pagerank.create_graph(ses).tolist() ,[(0.0, 0.0, 1.0), (1.0, 0.0, 0.0), (1.0, 1.0, 0.0)])
+                self.assertEqual(pagerank.create_graph(ses).tolist() ,[(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
 
 
     def test_get_probabilyties(self):
