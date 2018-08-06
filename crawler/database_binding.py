@@ -1,9 +1,11 @@
 from models import Article, base
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from scrapy.http import HtmlResponse
-import requests
+try:
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from scrapy.http import HtmlResponse
+    import requests
+except Exception:
+    pass
 
 from WikiResponseProcessor import *
 
