@@ -8,7 +8,7 @@ class TestPagerank(unittest.TestCase):
         with patch('pagerank.init_db'), patch('pagerank.get_urls') as mocked_urls:
             mocked_urls.return_value = ['Andrei','Nikita','Sergei']
             with patch('pagerank.get_links_url') as scammed_urls:
-                scammed_urls.return_value = [['Nikita'], ['Andrei'],['Nikita']]
+                scammed_urls.return_value = ['Nikita','Nikita']
                 ses = pagerank.init_db()
                 self.assertEqual(pagerank.create_graph(ses).tolist() ,[(0.0, 0.0, 1.0), (1.0, 0.0, 0.0), (1.0, 1.0, 0.0)])
 
