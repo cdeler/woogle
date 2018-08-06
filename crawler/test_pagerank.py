@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from unittest.mock import patch
-from crawler import pagerank
+import pagerank
 
 class TestPagerank(unittest.TestCase):
 

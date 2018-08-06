@@ -1,6 +1,6 @@
 import itertools
 import numpy as np
-from crawler.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
+from database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
 from time import time
 
 
