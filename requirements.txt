@@ -2,4 +2,4 @@ Flask
 elasticsearch
 sqlalchemy
 requests
-aiohttp==3.3.2
+aiohttp
