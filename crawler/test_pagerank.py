@@ -2,7 +2,6 @@ import unittest
 import numpy as np
 from unittest.mock import patch
 import pagerank
-
 class TestPagerank(unittest.TestCase):
 
     def test_create_graph_positive(self):

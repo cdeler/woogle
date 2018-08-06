@@ -1,11 +1,11 @@
-from .models import Article, base
+from models import Article, base
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from scrapy.http import HtmlResponse
 import requests
 
-from .WikiResponseProcessor import *
+from WikiResponseProcessor import *
 
 def init_db():
     db_string = "postgresql:///test"

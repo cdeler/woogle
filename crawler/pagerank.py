@@ -4,6 +4,7 @@ from database_binding import init_db, get_urls, get_links_url, get_rows, update_
 from time import time
 
 
+
 def pageRank(M, d=0.85, squere_error=1e-6):
     """
     Function to get pagerank of the matrix.
