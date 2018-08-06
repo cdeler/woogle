@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
-import os
+import os, errno
 
 import database_binding
 
@@ -39,8 +39,15 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
         :param path: folder to save articles to
         :return: None
         """
-        path = os.path.join(
-            path, f"{response.xpath('//title/text()').extract_first()}.txt")
+
+        if not os.path.exists(path):
+            try:
+                os.makedirs(path)
+            except OSError as exc:
+                if exc.errno != errno.EEXIST:
+                    raise
+
+        path = os.path.join(path, f"{response.xpath('//title/text()').extract_first()}.txt")
         with open(path, 'w', encoding="utf-8") as output:
             try:
                 text = response.xpath(

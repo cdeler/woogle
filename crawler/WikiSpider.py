@@ -1,5 +1,5 @@
 import scrapy
-from WikiResponseProcessor import WikiResponseProcessor
+import WikiResponseProcessor
 
 
 class WikiSpider(scrapy.Spider):
@@ -35,11 +35,11 @@ class WikiSpider(scrapy.Spider):
         :return:
         """
         if self.args:
-            self.processor = WikiResponseProcessor.getWikiResponseProcessor(
+            self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
                 self.args)
             self.processor.process(response, self.args)
         else:
-            self.processor = WikiResponseProcessor.getWikiResponseProcessor()
+            self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor()
             self.processor.process(response)
 
         pages = response.xpath(

@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from scrapy.http import HtmlResponse
 import requests
 
-from WikiResponseProcessor import DBResponseProcessor
+import WikiResponseProcessor
 
 
 def init_db():
@@ -57,7 +57,7 @@ def reparse_by_id(session, id):
     url = session.query(Article.url).filter(Article.id == id).first()[0]
     response = requests.get(url)
     response = HtmlResponse(url=url, body=response.content)
-    DBResponseProcessor().process(response, id_to_update=id)
+    WikiResponseProcessor.DBResponseProcessor().process(response, id_to_update=id)
 
 
 def delete(session, id=None, title=None, url=None):
