@@ -5,4 +5,4 @@ requests
 aiohttp
 numpy
 scrapy
-BeautifulSoup
+bs4
