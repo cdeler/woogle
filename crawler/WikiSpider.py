@@ -2,7 +2,7 @@ import scrapy
 
 
 from WikiResponseProcessor import *
-import crawler.setting_language as setting
+import setting_language as setting
 
 import os
 
@@ -55,9 +55,14 @@ class WikiSpider(scrapy.Spider):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
             num_threads: count threads
-            language: wikipedia language (ru, en)
+            language: wiipedia language (ru, en)
             output: output (stdout, db, directory)
             silent: flag, turn on silent mode, use with output=stdout
+        if one of the arguments is not specified, the following next value:
+            language=ru
+            output=directory
+            silent=False
+
         :param arg: agrument for crawler
         :type arg: str
         """

@@ -1,8 +1,10 @@
 import argparse
 import functools
 from subprocess import call
+import os
 
 import crawler.setting_language as setting
+
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
 CHOICE_OUTPUT = ['stdout', 'db', 'directory']
@@ -73,5 +75,5 @@ if __name__ == "__main__":
     # call crawler with given parameters
     # command for running looks like: scrapy runspider spider.py -a [arg1=val1
     # arg2=val2 ...]
-    call(["scrapy", "runspider", "WikiSpider.py",
+    call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
           "-a", f'arg={arguments_for_crawler}'])
