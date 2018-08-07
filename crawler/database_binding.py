@@ -47,9 +47,9 @@ def insert(session, *args, **kwargs):
     session.commit()
 
 
-def update(session, id, title, url, text):
+def update(session, id, title, url, text, links):
     session.query(Article).filter(Article.id == id).update(
-        {'title': title, 'url': url, 'text': text})
+        {'title': title, 'url': url, 'text': text, 'links': links})
     session.commit()
 
 
@@ -70,19 +70,3 @@ def delete(session, id=None, title=None, url=None):
     else:
         session.query(Article).delete()
     session.commit()
-
-
-if __name__ == '__main__':
-    session = init_db()
-    # dict = {'title':"some title", 'url':"some url", 'text':'some text'}
-    # insert(session, **dict)
-    # columns = ('title', 'url', 'text')
-    # input_data = ('some title', 'some url', 'some text')
-    # input_row = {k: v for k, v in zip(columns, input_data)}
-    # id = 500
-    # insert(session, id=id, **input_row)
-    # insert(session, title="some title", url="some url", text='some text')
-    reparse_by_id(session, 345)
-    # print(read(session, title='some title'))
-    # print(read(session, id=5))
-    # delete(session, id=349)

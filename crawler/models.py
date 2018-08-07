@@ -10,6 +10,8 @@ class Article(base):
     title = Column(VARCHAR(255))
     url = Column(VARCHAR(255))
     text = Column(TEXT)
+    links = Column(TEXT)
+    # pagerank = Column(float, default=0)
 
 
 # class Meta(base):
