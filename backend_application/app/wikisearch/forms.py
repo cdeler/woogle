@@ -5,7 +5,7 @@ class SearchRequest(forms.Form):
         label='',
         max_length=100,
         widget=forms.TextInput(attrs={
-            type:'text',
-            id:'search',
+            'type':'text',
+            'id':'search',
             'placeholder': 'Search for...',
     }))
