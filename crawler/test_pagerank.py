@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from unittest.mock import patch
-import pagerank
+
 import sys
 
 
@@ -20,6 +20,7 @@ class ImportBlocker(object):
 
 sys.meta_path=[ImportBlocker('scrapy.http')]
 
+import pagerank
 
 class TestPagerank(unittest.TestCase):
 
