@@ -1,6 +1,5 @@
 import scrapy
 
-
 from WikiResponseProcessor import *
 import setting_language as setting
 
@@ -31,6 +30,16 @@ def arg_str2dict(arg):
     return arg_dict
 
 
+def arg_contains_output_and_silent(args):
+    try:
+        args['output']
+        args['silent']
+    except Exception:
+        return False
+    else:
+        return True
+
+
 def choose_language(arg):
     # setup language setting
     languages = list(setting.LANGUAGE_SETTING.keys())
@@ -55,7 +64,7 @@ class WikiSpider(scrapy.Spider):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
             num_threads: count threads
-            language: wiipedia language (ru, en)
+            language: wikipedia language (ru, en)
             output: output (stdout, db, directory)
             silent: flag, turn on silent mode, use with output=stdout
         if one of the arguments is not specified, the following next value:
@@ -103,9 +112,8 @@ class WikiSpider(scrapy.Spider):
         self.processor = WikiResponseProcessor.getWikiResponseProcessor(
             self.args)
 
-        # if output=stdout
-        if self.args is not None and 'output' in self.args and self.args[
-                'output'] == 'stdout' and 'silent' in self.args:
+        if arg_contains_output_and_silent(
+                self.args) and self.args['output'] == 'stdout':
             self.processor.process(response, silent=self.args['silent'])
         else:
             self.processor.process(response)

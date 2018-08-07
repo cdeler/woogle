@@ -44,12 +44,8 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
         """
         # delete not used characters in title/text()
         title_text = response.xpath('//title/text()').extract_first()
-        title_text = reduce(
-            lambda x,
-            i: x +
-            i if i not in NOT_USED_CHARACTERS_IN_DIRECTORY_MODE else x,
-            title_text,
-            '')
+        for ch in NOT_USED_CHARACTERS_IN_DIRECTORY_MODE:
+            title_text = title_text.replace(ch, '')
 
         path = os.path.join(path, f"{title_text}.txt")
         with open(path, 'w', encoding="utf-8") as output:
