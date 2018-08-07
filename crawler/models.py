@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, ForeignKey
+from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 base = declarative_base()
@@ -11,7 +11,7 @@ class Article(base):
     url = Column(VARCHAR(255))
     text = Column(TEXT)
     links = Column(TEXT)
-    # pagerank = Column(float, default=0)
+    pagerank = Column(FLOAT, default=0)
 
 
 # class Meta(base):
