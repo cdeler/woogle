@@ -2,7 +2,7 @@ Flask
 elasticsearch
 sqlalchemy
 aiohttp
-pypiwin32 == 223
-beautifulsoup == 4.6.0
-scrapy == 1.5.0
-requests == 2.19.1
+pypiwin32
+beautifulsoup
+scrapy
+requests
