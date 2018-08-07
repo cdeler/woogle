@@ -3,7 +3,10 @@ from WikiResponseProcessor import *
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from scrapy.http import HtmlResponse
+try:
+    from scrapy.http import HtmlResponse
+except Exception:
+    pass
 import requests
 
 import WikiResponseProcessor
