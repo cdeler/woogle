@@ -1,33 +1,48 @@
 from models import Article, base
-try:
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from scrapy.http import HtmlResponse
-    import requests
-except Exception:
-    pass
-
 from WikiResponseProcessor import *
 
-def init_db():
-    db_string = "postgresql:///test"
-    db = create_engine(db_string)
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from scrapy.http import HtmlResponse
+import requests
 
+import WikiResponseProcessor
+
+def init_db():
+    db_string = "postgres:///test"
+    db = create_engine(db_string)
     Session = sessionmaker(db)
     session = Session()
     base.metadata.create_all(db)
     return session
 
 
+def read(session, id=None, title=None, url=None):
+    if id:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.id == id).first()
+    elif title:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.title == title).first()
+    elif url:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.url == url).first()
+    else:
+        articles = session.query(Article.title, Article.url, Article.text)
+        return articles
+
 def insert(session, *args, **kwargs):
     session.add(Article(*args, **kwargs))
     session.commit()
-
-
-def delete_all(session):
-    session.query(Article).delete()
-    session.commit()
-
 
 def update(session, id, title, url, text):
     session.query(Article).filter(Article.id == id).update(
@@ -36,11 +51,23 @@ def update(session, id, title, url, text):
 
 
 def reparse_by_id(session, id):
-    # only for database
     url = session.query(Article.url).filter(Article.id == id).first()[0]
     response = requests.get(url)
     response = HtmlResponse(url=url, body=response.content)
-    DBResponseProcessor().process(response, id_to_update=id)
+    WikiResponseProcessor.DBResponseProcessor().process(response, id_to_update=id)
+
+
+def delete(session, id=None, title=None, url=None):
+    if id:
+        session.query(Article.id).filter(Article.id == id).delete()
+    elif title:
+        session.query(Article.title).filter(Article.title == title).delete()
+    elif url:
+        session.query(Article.url).filter(Article.url == url).delete()
+    else:
+        session.query(Article).delete()
+    session.commit()
+
 
 
 def get_rows(ses):
@@ -94,14 +121,3 @@ def update_page_rank(session, url, pagerank):
         'page_rank': pagerank
     })
     session.commit()
-
-def read(session):
-    articles = session.query(Article)
-    for article in articles:
-        print(article.title)
-
-
-if __name__ == '__main__':
-    session = init_db()
-    #insert(session, title='Sodapoppin', url='https://en.wikipedia.org/wiki/Sodapoppin',text='Thomas Jefferson Chance Morris IV (born February 15, 1994), more commonly known by his online alias Sodapoppin, a Twitch.tv streamer and former World of Warcraft player. He has among the largest following on Twitch with over 2 million followers and over 200 million views',page_rank='0')
-    reparse_by_id(session, 11)

@@ -1,11 +1,10 @@
 import itertools
 import numpy as np
 from database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
-from time import time
 
+SQUERE_ERROR = 1e-6
 
-
-def pageRank(M, d=0.85, squere_error=1e-6):
+def pageRank(M, d=0.85, squere_error=SQUERE_ERROR):
     """
     Function to get pagerank of the matrix.
 
@@ -42,29 +41,12 @@ def create_graph(ses):
     """
     names = get_urls(ses)
     x = np.zeros((3,), dtype={'names': names, 'formats': list(itertools.repeat('f4', len(names)))})
-    # for i in names:
-    #     links = get_links_url(ses, i)
-    #     print(links)
-    #     for k in links:
-    #         if k in names:
-    #             x[i][names.index(k)] = 1
-    #     !!!!!!!!!!!!!!!!!Atempt2!!!!!!!!!!!!!!
     for i in names:
         links = set(get_links_url(ses, i))
         dependings = links & set(names)
         while dependings:
             item = dependings.pop()
             x[i][names.index(item)] = 1
-
-    # !!!!!!!!!!!!!!!Attempt 3!!!!!!!!!!!!
-    # ns = set(names)
-    # namse = {i: get_links_url(ses, i) for i in names}
-    # for i, j in namse.items():
-    #     temp = set(j) & ns
-    #     while temp:
-    #         item = temp.pop()
-    #         x[i][names.index(item)] = 1
-    print(x)
     return x
 
 def convert_to_array(arr):
@@ -92,18 +74,16 @@ def get_probabilyties(session, new_x):
     for i in range(r):
         np.set_printoptions(precision=3)
         M[:, i] = new_x[:, i] / new_x[:, i].sum()
-    print(M)
     return M
 
 
-def main():
+
+
+if __name__ == '__main__':
+    """
+    Compute pagerank
+    """
+    ses = init_db()
     rate = dict(zip(get_urls(ses), pageRank(get_probabilyties(ses, convert_to_array(create_graph(ses))))))
     for i, j in rate.items():
         update_page_rank(ses, i, j)
-
-if __name__ == '__main__':
-    ses = init_db()
-    start = time()
-    result = main()
-    duration = time() - start
-    print(result, duration)
