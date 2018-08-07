@@ -1,0 +1,12 @@
+{
+  "query": {
+    "simple_query_string": {
+      "query": "Australia",
+      "fields": ["title^2", "content"]
+    }
+  }, 
+  
+  "size": 20,
+  "_source": ["title", "pageid"],
+  "sort": [{"_score": "desc"}]
+}

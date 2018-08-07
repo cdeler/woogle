@@ -12,18 +12,21 @@ class WikiResponseProcessor(ABC):
 
     @staticmethod
     def getWikiResponseProcessor(args=None):
-        processor_type = 'FileWRP'
-        try:
-            if args.isdigit():
-                processor_type = 'StdOutWRP'
-            elif args == "db":
-                processor_type = 'DBWRP'
-        except AttributeError:
-            pass
+        if args is not None and 'output' in args:
+            mode_output = args['output']
 
-        if processor_type == 'StdOutWRP':
-            return StdOutWikiResponseProcessor()
-        elif processor_type == 'FileWRP':
+            if mode_output == 'stdout':
+                return StdOutWikiResponseProcessor()
+            elif mode_output == 'directory':
+                return FileWikiResponseProcessor()
+            elif mode_output == 'db':
+                # code for output in db
+                print("Output mode: data base")
+                pass
+            else:
+                raise ValueError(
+                    f"Invalid mode output - {args['output']}. Correct value of argument 'output' - stdout, db, directory ")
+        else:
             return FileWikiResponseProcessor()
         elif processor_type == 'DBWRP':
             return DBResponseProcessor()
@@ -53,11 +56,12 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
 
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
-    def process(self, response, n=40):
+    def process(self, response, n=40, silent=False):
         """ Method that prints first n symbols of wiki article to stdout
 
         :param response:
         :param n:
+        :param silent:
         :return:
         """
         output = ''
@@ -73,44 +77,5 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
             output += p.text
             if len(output) > n or p.nextSibling.name != 'p' :
                 break
-        print(output[:n])
-
-
-class DBResponseProcessor(WikiResponseProcessor):
-    """ Class, which allows to store crawled data in database   """
-
-    def __init__(self):
-        # names of existing database should be here to establish connection
-        self.connection = psycopg2.connect(f"host='localhost' dbname='dbname' user='username' password='password'")
-
-    def process(self, response, db=True):
-        """ Method that stores data into database
-        :param response
-        :param db
-        :return:
-        """
-        columns = 'title, url, text'
-
-        title = response.xpath('//title/text()').extract_first()
-        url = response.url
-        content = ''
-        try:
-            text = response.xpath(
-                    '//div[@class="mw-parser-output"]').extract()[0]
-        except IndexError:
-            return 0
-
-        soup = BeautifulSoup(text, 'lxml')
-        paragraph = soup.select('div.mw-parser-output > p')
-        for p in paragraph:
-            content += p.text
-            if p.nextSibling.name != 'p':
-                break
-
-        values = (title, url, content)
-        mark = self.connection.cursor()
-        # wikitable must be replaced by the real name of the table
-        statement = 'INSERT INTO wikitable (' + columns + ') VALUES (%s,%s,%s)'
-
-        mark.execute(statement, values)
-        self.connection.commit()
+        if not silent:
+            print("\n------\n", response.url, '\n', output[:n], "\n------\n")
