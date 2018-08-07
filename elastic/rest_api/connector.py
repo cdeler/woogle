@@ -23,6 +23,7 @@ class Connector(object):
         # but then you must change the container name to the docker-compose.yml
         self.es = Elasticsearch([{"host": elastic_host, "port": elastic_port}], **kwargs)
         self.get_main_query_from_file()
+        self.delete_index()
         self.add_mapping_and_setting()
         self.add_simple_data_files()
 

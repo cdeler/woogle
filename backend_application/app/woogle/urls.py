@@ -18,10 +18,12 @@ from django.urls import path
 
 
 from wikisearch.views import ArticleListView
+import wikisearch.views as views
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', ArticleListView.as_view(), name='article-list'),
-
+    # path('', ArticleListView.as_view(), name='article-list'),
+    path("", views.search_page),
+    path("search/", views.get_user_query)
 ]
