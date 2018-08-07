@@ -1,7 +1,28 @@
 import scrapy
-from WikiResponseProcessor import *
-import os
+import WikiResponseProcessor
 
+def arg_str2dict(arg):
+    """
+    Converting argument from "arg1=va1 arg2=val2 ..." to dict {arg1:va1, arg2:val2, ...}
+    :param args: str
+    :return: dict
+    """
+    try:
+        arg_dict = {i.split('=')[0]: i.split('=')[1] for i in arg.split()}
+    except Exception as e:
+        raise TypeError(
+            "Invalid format argument:\n f{arg} \n Correct format: 'arg1=va1 arg2=val2 ...' ") from e
+
+    if 'silent' in arg_dict:
+        if arg_dict['silent'] == "False":
+            arg_dict['silent'] = False
+        elif arg_dict['silent'] == "True":
+            arg_dict['silent'] = True
+        else:
+            raise ValueError(
+                f"Invalid mode silent - {arg_dict['silent']}. Correct value of argument 'silent' - True, False ")
+
+    return arg_dict
 
 def arg_str2dict(arg):
     """
@@ -53,7 +74,6 @@ class WikiSpider(scrapy.Spider):
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
-
         :param response:
         :return:
         """
@@ -67,12 +87,11 @@ class WikiSpider(scrapy.Spider):
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
-
         :param response:
         :return:
         """
 
-        self.processor = WikiResponseProcessor.getWikiResponseProcessor(
+        self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
             self.args)
 
         # if output=stdout
@@ -85,4 +104,4 @@ class WikiSpider(scrapy.Spider):
             '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
         for page in pages:
             if page is not None:
-                yield response.follow(page, callback=self.parse_wiki_pages)
+yield response.follow(page, callback=self.parse_wiki_pages)
