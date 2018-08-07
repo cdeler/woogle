@@ -3,6 +3,6 @@ elasticsearch
 sqlalchemy
 aiohttp
 pypiwin32
-beautifulsoup
+beautifulsoup4
 scrapy
 requests
