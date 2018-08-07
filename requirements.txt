@@ -2,7 +2,6 @@ Flask
 elasticsearch
 sqlalchemy
 aiohttp
-pypiwin32
 beautifulsoup4
 scrapy
 requests
