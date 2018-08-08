@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 import os, errno
+import re
 
 import database_binding
 
@@ -13,7 +14,7 @@ class WikiResponseProcessor(ABC):
 
     @staticmethod
     def getWikiResponseProcessor(args=None):
-      
+
         if args is not None and 'output' in args:
             mode_output = args['output']
 
@@ -105,6 +106,7 @@ class DBResponseProcessor(WikiResponseProcessor):
         """
         title = response.xpath('//title/text()').extract_first()
         url = response.url
+        base = url[:24]
         content = ''
         try:
             text = response.xpath(
@@ -114,7 +116,11 @@ class DBResponseProcessor(WikiResponseProcessor):
 
         soup = BeautifulSoup(text, 'lxml')
         paragraph = soup.select('div.mw-parser-output > p')
+        links = ''
         for p in paragraph:
+            for link in p.findAll('a', attrs={'href': re.compile("^/wiki")}):
+                full_link = base + link.get('href') + ' '
+                links += full_link
             content += p.text
             if p.nextSibling.name != 'p':
                 break
@@ -127,7 +133,8 @@ class DBResponseProcessor(WikiResponseProcessor):
                 id_to_update,
                 title=title,
                 url=url,
-                text=content)
+                text=content,
+                links=links)
         else:
             database_binding.insert(
-session, title=title, url=url, text=content)
+                session, title=title, url=url, text=content, links=links)
