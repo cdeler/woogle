@@ -1,7 +1,5 @@
 import scrapy
-from WikiResponseProcessor import *
-import os
-
+import WikiResponseProcessor
 
 def arg_str2dict(arg):
     """
@@ -33,7 +31,6 @@ class WikiSpider(scrapy.Spider):
     start_urls = [
         'https://ru.wikipedia.org/w/index.php?title=%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D1%81%D0%B5_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D1%8B',
     ]
-
     allowed_domains = ['ru.wikipedia.org', ]
 
     def __init__(self, arg=None):
@@ -54,7 +51,6 @@ class WikiSpider(scrapy.Spider):
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
-
         :param response:
         :return:
         """
@@ -68,12 +64,11 @@ class WikiSpider(scrapy.Spider):
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
-
         :param response:
         :return:
         """
 
-        self.processor = WikiResponseProcessor.getWikiResponseProcessor(
+        self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
             self.args)
 
         # if output=stdout

@@ -1,5 +1,6 @@
 Flask
 elasticsearch
+Scrapy==1.5.0
 sqlalchemy
 requests
 aiohttp
