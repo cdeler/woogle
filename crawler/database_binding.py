@@ -1,5 +1,4 @@
 from models import Article, base
-from WikiResponseProcessor import *
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,9 +10,11 @@ import requests
 
 import WikiResponseProcessor
 
+
 def init_db():
-    db_string = "postgres:///test"
+    db_string = "postgres://username:password@localhost/dbname"
     db = create_engine(db_string)
+
     Session = sessionmaker(db)
     session = Session()
     base.metadata.create_all(db)
@@ -43,13 +44,15 @@ def read(session, id=None, title=None, url=None):
         articles = session.query(Article.title, Article.url, Article.text)
         return articles
 
+
 def insert(session, *args, **kwargs):
     session.add(Article(*args, **kwargs))
     session.commit()
 
-def update(session, id, title, url, text):
+
+def update(session, id, title, url, text, links):
     session.query(Article).filter(Article.id == id).update(
-        {'title': title, 'url': url, 'text': text})
+        {'title': title, 'url': url, 'text': text, 'links': links})
     session.commit()
 
 
@@ -70,7 +73,6 @@ def delete(session, id=None, title=None, url=None):
     else:
         session.query(Article).delete()
     session.commit()
-
 
 
 def get_rows(ses):
@@ -105,7 +107,7 @@ def get_links_url(session, url):
     :type url: str.
     :returns: list of strings - list of urls
     """
-    url = session.query(Article.urls).filter(Article.url == url)
+    url = session.query(Article.links).filter(Article.url == url)
     return [u[0].split() for u in url][0]
 
 def update_page_rank(session, url, pagerank):
