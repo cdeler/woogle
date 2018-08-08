@@ -14,7 +14,7 @@ class WikiResponseProcessor(ABC):
 
     @staticmethod
     def getWikiResponseProcessor(args=None):
-
+      
         if args is not None and 'output' in args:
             mode_output = args['output']
 
@@ -137,4 +137,4 @@ class DBResponseProcessor(WikiResponseProcessor):
                 links=links)
         else:
             database_binding.insert(
-                session, title=title, url=url, text=content, links=links)
+session, title=title, url=url, text=content, links=links)

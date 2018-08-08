@@ -6,5 +6,5 @@ requests
 aiohttp
 numpy
 scrapy
-bs4
+beautifulsoup4
 psycopg2
