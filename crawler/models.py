@@ -11,7 +11,7 @@ class Article(base):
     url = Column(VARCHAR(255))
     text = Column(TEXT)
     links = Column(TEXT)
-    pagerank = Column(FLOAT, default=0)
+    page_rank = Column(FLOAT, default=0)
 
 
 # class Meta(base):
