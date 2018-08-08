@@ -13,11 +13,16 @@ services:
       - "5000:5000"
     expose:
       - "5000"
+      - "8000"
     volumes:
       - ./rest_api:/rest_api
     depends_on:
       - elasticsearch
     command: ["/cmd.sh"]
+    networks:
+      network:
+        aliases:
+          - web.network_elastic_backend
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
@@ -35,11 +40,16 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
-
-
+    networks:
+      network:
+        aliases:
+          - elasticsearch.network_elastic_backend
 
 volumes:
   esdata1:
     driver: local
 
-  
+networks:
+  network:
+    external:
+      name: network_elastic_backend

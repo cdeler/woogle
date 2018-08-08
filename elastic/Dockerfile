@@ -10,3 +10,4 @@ WORKDIR /rest_api
 COPY rest_api /rest_api
 
 EXPOSE 5000
+EXPOSE 8000
