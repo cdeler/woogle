@@ -8,13 +8,10 @@ from crawler import pagerank
 class TestPagerank(unittest.TestCase):
 
     def test_create_graph_positive(self):
-        with patch('pagerank.get_urls') as mocked_urls:
-            mocked_urls.return_value = ['Andrei','Nikita','Sergei']
-            with patch('pagerank.get_links_url') as scammed_urls:
-                scammed_urls.return_value = ['Nikita','Nikita']
-                mock_function = create_autospec(pagerank.create_graph, return_value = [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
-                self.assertEqual(mock_function('ses'),
-                                 [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
+
+        mock_function = create_autospec(pagerank.create_graph, return_value = [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
+        self.assertEqual(mock_function('ses'),
+                         [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
 
 
     def test_get_probabilyties(self):
