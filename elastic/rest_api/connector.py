@@ -21,12 +21,12 @@ class Connector(object):
         """
         # we can change host_name(elasticsearch) to another,
         # but then you must change the container name to the docker-compose.yml
-        self.es = Elasticsearch([{"host": elastic_host, "port": elastic_port}], **kwargs)
+        self.es = Elasticsearch(
+            [{"host": elastic_host, "port": elastic_port}], **kwargs)
         self.get_main_query_from_file()
         self.delete_index()
         self.add_mapping_and_setting()
         self.add_simple_data_files()
-
 
     def curl(self, request, method):
         """
@@ -52,7 +52,11 @@ class Connector(object):
             doc_type = request.query["doc_type"]
             doc_id = request.query["id"]
             body = request.query["body"]
-            return self.es.index(index=index, doc_type=doc_type, id=doc_id, body=body)
+            return self.es.index(
+                index=index,
+                doc_type=doc_type,
+                id=doc_id,
+                body=body)
 
     def search(self, index, doc_type, search):
         """
@@ -67,7 +71,10 @@ class Connector(object):
 
         # for query with suggest
         main_search_query["suggest"]["title_suggestion"]["text"] = search
-        response = self.es.search(index=index, doc_type=doc_type, body=main_search_query)
+        response = self.es.search(
+            index=index,
+            doc_type=doc_type,
+            body=main_search_query)
         return response
 
     @staticmethod
@@ -93,7 +100,12 @@ class Connector(object):
                     i = i + 1
                     with open(os.path.join(root, file), "r") as js_file:
                         json_obj = js_file.read()
-                        self.es.index(index=INDEX, doc_type=DOC_TYPE, id=str(i), body=json_obj, ignore=400)
+                        self.es.index(
+                            index=INDEX,
+                            doc_type=DOC_TYPE,
+                            id=str(i),
+                            body=json_obj,
+                            ignore=400)
 
     def add_simple_data_files(self):
         """

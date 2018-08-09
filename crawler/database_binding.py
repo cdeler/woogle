@@ -85,6 +85,7 @@ def get_rows(ses):
     """
     return ses.query(Article).count()
 
+
 def get_urls(session):
     """
     Function to get all urls of article in a table.
@@ -96,6 +97,7 @@ def get_urls(session):
     url = session.query(Article.url)
     res = [u[0] for u in url]
     return res
+
 
 def get_links_url(session, url):
     """
@@ -109,6 +111,7 @@ def get_links_url(session, url):
     """
     url = session.query(Article.links).filter(Article.url == url)
     return [u[0].split() for u in url][0]
+
 
 def update_page_rank(session, url, pagerank):
     """

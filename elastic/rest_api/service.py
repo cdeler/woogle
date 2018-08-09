@@ -96,11 +96,27 @@ def waiting_connection_with_es(elastic_host: str, elastic_port: int):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="http server for elasticsearch")
-    parser.add_argument("--verbose", help="enable debug mode", action="store_true")
-    parser.add_argument("--mapping", type=bool, help="create index with mapping and setting up es", default=False)
-    parser.add_argument("--delete", type=bool, help="delete data and index", default=False)
-    parser.add_argument("--data", type=bool, help="add simple data_files in ES", default=False)
+    parser = argparse.ArgumentParser(
+        description="http server for elasticsearch")
+    parser.add_argument(
+        "--verbose",
+        help="enable debug mode",
+        action="store_true")
+    parser.add_argument(
+        "--mapping",
+        type=bool,
+        help="create index with mapping and setting up es",
+        default=False)
+    parser.add_argument(
+        "--delete",
+        type=bool,
+        help="delete data and index",
+        default=False)
+    parser.add_argument(
+        "--data",
+        type=bool,
+        help="add simple data_files in ES",
+        default=False)
     args = parser.parse_args()
 
     # read the configuration settings
@@ -116,7 +132,12 @@ if __name__ == '__main__':
         log_level = logging.ERROR
 
     ROOT_LOGGER.setLevel(log_level)
-    ROOT_LOGGER.addHandler(logging.FileHandler(os.path.join(DISTRO_ROOT_PATH, 'logs', 'log.txt')))
+    ROOT_LOGGER.addHandler(
+        logging.FileHandler(
+            os.path.join(
+                DISTRO_ROOT_PATH,
+                'logs',
+                'log.txt')))
     ROOT_LOGGER.info("\nBeginning at: {}".format(datetime.datetime.now()))
 
     # starting

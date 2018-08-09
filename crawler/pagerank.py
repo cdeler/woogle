@@ -4,6 +4,7 @@ from database_binding import init_db, get_urls, get_links_url, get_rows, update_
 
 SQUERE_ERROR = 1e-6
 
+
 def pageRank(M, d=0.85, squere_error=SQUERE_ERROR):
     """
     Function to get pagerank of the matrix.
@@ -19,16 +20,14 @@ def pageRank(M, d=0.85, squere_error=SQUERE_ERROR):
     n_pages = M.shape[0]
     v = np.random.rand(n_pages)
 
-    v = v/ v.sum()
+    v = v / v.sum()
 
     last_v = np.ones((n_pages))
-    M_hat =  d*M + (1-d)/n_pages * np.ones((n_pages, n_pages))
+    M_hat = d * M + (1 - d) / n_pages * np.ones((n_pages, n_pages))
     while np.square(v - last_v).sum() > squere_error:
         last_v = v
         v = M_hat.dot(v)
     return v
-
-
 
 
 def create_graph(ses):
@@ -40,7 +39,11 @@ def create_graph(ses):
     :return: Graph with dependices.
     """
     names = get_urls(ses)
-    x = np.zeros((3,), dtype={'names': names, 'formats': list(itertools.repeat('f4', len(names)))})
+    x = np.zeros(
+        (3,), dtype={
+            'names': names, 'formats': list(
+                itertools.repeat(
+                    'f4', len(names)))})
     for i in names:
         links = set(get_links_url(ses, i))
         dependings = links & set(names)
@@ -48,6 +51,7 @@ def create_graph(ses):
             item = dependings.pop()
             x[i][names.index(item)] = 1
     return x
+
 
 def convert_to_array(arr):
     """
@@ -58,6 +62,7 @@ def convert_to_array(arr):
     :return: np.array - new
     """
     return np.asarray([list(i) for i in arr.tolist()])
+
 
 def get_probabilyties(session, new_x):
     """
@@ -77,13 +82,12 @@ def get_probabilyties(session, new_x):
     return M
 
 
-
-
 if __name__ == '__main__':
     """
     Compute pagerank
     """
     ses = init_db()
-    rate = dict(zip(get_urls(ses), pageRank(get_probabilyties(ses, convert_to_array(create_graph(ses))))))
+    rate = dict(zip(get_urls(ses), pageRank(
+        get_probabilyties(ses, convert_to_array(create_graph(ses))))))
     for i, j in rate.items():
         update_page_rank(ses, i, j)

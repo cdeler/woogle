@@ -6,6 +6,7 @@ import requests
 import asyncio
 import aiohttp
 
+
 class DatabaseConnectionError(Exception):
     pass
 
@@ -88,7 +89,6 @@ class Connector:
             result_set = conn.execute(select_statement)
         return result_set
 
-
     async def _index(self, row):
         """
         Method that send single requests to index service.
@@ -151,6 +151,5 @@ class Connector:
 
 
 if __name__ == '__main__':
-    con = Connector('postgresql:///test','wiki','test','article')
+    con = Connector('postgresql:///test', 'wiki', 'test', 'article')
     con.index()
-

@@ -12,13 +12,13 @@ from functools import reduce
 from django.views.generic.list import ListView
 from .forms import SearchRequest
 
+
 class ArticleListView(ListView):
     form_class = SearchRequest
     model = Article
     paginate_by = 10
     template_name = 'search_page.html'
     queryset = []
-
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -36,13 +36,17 @@ class ArticleListView(ListView):
             # response = requests.request("GET", url, params=querystring).json()
             # match = [i['_id'] for i in response['hits']['hits']]
 
-            match = [10, 11] #Delete this and uncomments above when everithing is ready
-            articles = [Article.objects.filter(id=article_id) for article_id in match]
-            articles = reduce(Article.objects.union, articles, Article.objects.none())
+            # Delete this and uncomments above when everithing is ready
+            match = [10, 11]
+            articles = [
+                Article.objects.filter(
+                    id=article_id) for article_id in match]
+            articles = reduce(
+                Article.objects.union,
+                articles,
+                Article.objects.none())
             return articles
         return Article.objects.all()
-
-
 
 
 # AUTOCOMPLETE SUGGESTION (need to set connection between rest api and django)
@@ -79,7 +83,8 @@ def load_pages(user_query):
     host = "rest_api"
     port = 5000
 
-    url = "http://{host}:{port}/?index=wiki&doc_type=page&search=%22{q}%22".format(q=user_query,host=host, port=port)
+    url = "http://{host}:{port}/?index=wiki&doc_type=page&search=%22{q}%22".format(
+        q=user_query, host=host, port=port)
     try:
         response = requests.get(url, timeout=(40, 40)).json()
     except requests.exceptions.ReadTimeout:

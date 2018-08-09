@@ -52,7 +52,12 @@ ROOT_URLCONF = 'woogle.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(os.path.dirname(os.path.dirname(__file__)), "wikisearch", "templates")],
+        'DIRS': [
+            os.path.join(
+                os.path.dirname(
+                    os.path.dirname(__file__)),
+                "wikisearch",
+                "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

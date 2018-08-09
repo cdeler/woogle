@@ -16,13 +16,17 @@ class ArticleAdmin(admin.ModelAdmin):
         'page_rank'
     )
 
-    actions = ['reindex','reparse']
+    actions = ['reindex', 'reparse']
 
     def reindex(self, request, queryset):
         result = True
         for row in queryset.values('id'):
-            response = requests.post("http://0.0.0.0:9999", data = str(row['id']))
-            if response.content.decode('ascii') != f'{str(row["id"])} is executed':
+            response = requests.post(
+                "http://0.0.0.0:9999",
+                data=str(
+                    row['id']))
+            if response.content.decode(
+                    'ascii') != f'{str(row["id"])} is executed':
                 result = False
         if result:
             self.message_user(request, 'Articles ware successfully indexed')

@@ -1,9 +1,13 @@
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
-import os, errno
+import os
+import errno
 import re
 
 import database_binding
+
+NOT_USED_CHARACTERS_IN_DIRECTORY_MODE = [
+    '/', '\\', ':', '*', '?', '"', '<', '>', '|']
 
 
 class WikiResponseProcessor(ABC):
@@ -14,7 +18,7 @@ class WikiResponseProcessor(ABC):
 
     @staticmethod
     def getWikiResponseProcessor(args=None):
-      
+
         if args is not None and 'output' in args:
             mode_output = args['output']
 
@@ -49,7 +53,12 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
                 if exc.errno != errno.EEXIST:
                     raise
 
-        path = os.path.join(path, f"{response.xpath('//title/text()').extract_first()}.txt")
+        # delete not used characters in title/text()
+        title_text = response.xpath('//title/text()').extract_first()
+        for ch in NOT_USED_CHARACTERS_IN_DIRECTORY_MODE:
+            title_text = title_text.replace(ch, '')
+
+        path = os.path.join(path, f"{title_text}.txt")
         with open(path, 'w', encoding="utf-8") as output:
             try:
                 text = response.xpath(
