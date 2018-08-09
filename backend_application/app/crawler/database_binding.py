@@ -1,5 +1,4 @@
-from models import Article, base
-from WikiResponseProcessor import *
+from crawler.models import Article, base
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -9,11 +8,13 @@ except Exception:
     pass
 import requests
 
-import WikiResponseProcessor
+from crawler import WikiResponseProcessor
+
 
 def init_db():
-    db_string = "postgres:///test"
+    db_string = "postgres:///postgres://username:password@localhost/dbname"
     db = create_engine(db_string)
+
     Session = sessionmaker(db)
     session = Session()
     base.metadata.create_all(db)
@@ -43,13 +44,15 @@ def read(session, id=None, title=None, url=None):
         articles = session.query(Article.title, Article.url, Article.text)
         return articles
 
+
 def insert(session, *args, **kwargs):
     session.add(Article(*args, **kwargs))
     session.commit()
 
-def update(session, id, title, url, text):
+
+def update(session, id, title, url, text, links):
     session.query(Article).filter(Article.id == id).update(
-        {'title': title, 'url': url, 'text': text})
+        {'title': title, 'url': url, 'text': text, 'links': links})
     session.commit()
 
 
@@ -72,7 +75,6 @@ def delete(session, id=None, title=None, url=None):
     session.commit()
 
 
-
 def get_rows(ses):
     """
     Function to get amount of rows in a table.
@@ -82,6 +84,7 @@ def get_rows(ses):
     :returns: integer amount of rows in table
     """
     return ses.query(Article).count()
+
 
 def get_urls(session):
     """
@@ -95,6 +98,7 @@ def get_urls(session):
     res = [u[0] for u in url]
     return res
 
+
 def get_links_url(session, url):
     """
     Function to get all urls that referred on other article.
@@ -105,8 +109,9 @@ def get_links_url(session, url):
     :type url: str.
     :returns: list of strings - list of urls
     """
-    url = session.query(Article.urls).filter(Article.url == url)
+    url = session.query(Article.links).filter(Article.url == url)
     return [u[0].split() for u in url][0]
+
 
 def update_page_rank(session, url, pagerank):
     """
@@ -124,3 +129,4 @@ def update_page_rank(session, url, pagerank):
         'page_rank': pagerank
     })
     session.commit()
+

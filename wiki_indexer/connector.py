@@ -97,7 +97,6 @@ class Connector:
         :return: None
         """
         url = "http://127.0.0.1:5000/"
-
         querystring = {
             "index": self.elastic_index,
             "doc_type": self.elastic_doc_type,
@@ -127,13 +126,14 @@ class Connector:
         if id:
             with self.engine.connect() as conn:
                 select_statement = self.table.select().where(self.table.c.id == id)
-                set = conn.execute(select_statement).fetchone()
+                set = conn.execute(select_statement).fetchall()
         else:
             set = self.table_set
 
         for row in set:
             features.append(self._index(row))
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(asyncio.wait(features))
 
     def delete_index(self):

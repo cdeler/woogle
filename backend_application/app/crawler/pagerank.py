@@ -1,6 +1,8 @@
 import itertools
 import numpy as np
-from database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
+from crawler.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
+import time
+
 
 SQUERE_ERROR = 1e-6
 
@@ -40,13 +42,20 @@ def create_graph(ses):
     :return: Graph with dependices.
     """
     names = get_urls(ses)
-    x = np.zeros((3,), dtype={'names': names, 'formats': list(itertools.repeat('f4', len(names)))})
+    x = np.zeros((len(names),), dtype={'names': names, 'formats': list(itertools.repeat('f4', len(names)))})
+
     for i in names:
         links = set(get_links_url(ses, i))
         dependings = links & set(names)
+        if not dependings :
+
+            for j in range(len(x[i])):
+
+                x[i][j] = 1
         while dependings:
             item = dependings.pop()
             x[i][names.index(item)] = 1
+
     return x
 
 def convert_to_array(arr):
@@ -59,7 +68,7 @@ def convert_to_array(arr):
     """
     return np.asarray([list(i) for i in arr.tolist()])
 
-def get_probabilyties(session, new_x):
+def get_probabilyties(rows, new_x):
     """
     Function that equally distribute probability of each vector.
 
@@ -69,21 +78,26 @@ def get_probabilyties(session, new_x):
     :type new_x: np.array.
     :return: matrix.
     """
-    r = get_rows(session)
+    r = rows
     M = np.empty((r, r))
     for i in range(r):
         np.set_printoptions(precision=3)
         M[:, i] = new_x[:, i] / new_x[:, i].sum()
     return M
 
-
-
-
-if __name__ == '__main__':
+def compute_pagerank():
     """
     Compute pagerank
     """
-    ses = init_db()
-    rate = dict(zip(get_urls(ses), pageRank(get_probabilyties(ses, convert_to_array(create_graph(ses))))))
-    for i, j in rate.items():
-        update_page_rank(ses, i, j)
+    t1 = time.time()
+    success = True
+    try:
+        ses = init_db()
+        rate = dict(zip(get_urls(ses), pageRank(get_probabilyties(get_rows(ses), convert_to_array(create_graph(ses))))))
+        for i, j in rate.items():
+            update_page_rank(ses, i, j)
+    except Exception as e:
+        success = False
+        print(f'error {type(e).__name__}: {e.args[0]}')
+    print(t1 - time.time())
+    return success
