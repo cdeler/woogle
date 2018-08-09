@@ -2,3 +2,8 @@ Flask
 elasticsearch
 sqlalchemy
 requests
+aiohttp
+numpy
+scrapy
+beautifulsoup4
+psycopg2

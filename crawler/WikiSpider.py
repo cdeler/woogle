@@ -1,6 +1,6 @@
 import scrapy
 
-from WikiResponseProcessor import *
+import WikiResponseProcessor
 import setting_language as setting
 
 import os
@@ -82,6 +82,7 @@ class WikiSpider(scrapy.Spider):
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
+
         :param response:
         :return:
         """
@@ -95,11 +96,12 @@ class WikiSpider(scrapy.Spider):
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
+
         :param response:
         :return:
         """
 
-        self.processor = WikiResponseProcessor.getWikiResponseProcessor(
+        self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
             self.args)
 
         if self.args and 'output' in self.args:

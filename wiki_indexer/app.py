@@ -4,6 +4,7 @@ import configparser
 import connector
 import logging
 
+
 application = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('app.ini')
@@ -23,7 +24,7 @@ def get_tasks():
         elif request.data.decode('ascii') == 'delete':
             conn.delete_index()
         elif request.data.decode('ascii').isdigit():
-            conn.index_by_id(request.data.decode('ascii'))
+            conn.index(request.data.decode('ascii'))
         else:
             return abort(400)
         return f'{request.data.decode("ascii")} is executed'

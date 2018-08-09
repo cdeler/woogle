@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='article',
             name='text',
-            field=models.TextField(help_text='initial text of article in wikipedia', verbose_name='inittext'),
+            field=models.TextField(
+                help_text='initial text of article in wikipedia',
+                verbose_name='inittext'),
         ),
     ]

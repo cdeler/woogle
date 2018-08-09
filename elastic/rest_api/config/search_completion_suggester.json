@@ -1,0 +1,12 @@
+{
+  "suggest" : {
+    "title_suggestion" : {
+      "text" : "user_search_phrase",
+      "completion": {
+        "field": "title",
+        "size": 10
+      }
+    }
+  },
+  "_source": ["title", "pageid", "content", "url"]
+}

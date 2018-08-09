@@ -79,52 +79,7 @@ class TestApp(unittest.TestCase):
                 with patch('connector.Table') as mocked_table:
                     mocked_table.return_value.columns = [head]
                     inst = Connector("sad", 'sad', 'someesindex', 'sda')
-        self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table',})
-
-
-    def test_table_set(self):
-        pass
-
-    def test_privite_index(self):
-        head = Mock()
-        head.name = 'sad'
-        with patch('connector.create_engine') as mocked_engine:
-            with patch('connector.MetaData') as mocked_metadata:
-                with patch('connector.Table') as mocked_table:
-                    mocked_table.return_value.columns = [head]
-                    inst = Connector("sad", 'sad', 'someesindex', 'sda')
-                    with patch('connector.Connector.es.index') as mock_es:
-                        mock_es.return_value.index = 'sa'
-                        res = inst._index((2, ['Table']))
-        self.assertEqual(None, res)
-
-    def test_privite_index_negative(self):
-        with self.assertRaises(connector.ElasticConnectionError) as raised_exc:
-            self.inst._index((2, 'Table'))
-        self.assertEqual(
-            raised_exc.exception.args[0],
-            'Connection to elasticsearch has failed')
-
-    def test_index_with_wrong_argument_negative(self):
-        with self.assertRaises(TypeError) as raised_exception:
-            self.inst.index('s')
-        self.assertEqual(
-            raised_exception.exception.args[0],
-            'threads must be int')
-
-    def test_index_with_negative_threads_negative(self):
-        with self.assertRaises(ValueError) as raised_exception:
-            self.inst.index(-1)
-        self.assertEqual(
-            raised_exception.exception.args[0],
-            'threads must be positive')
-
-    def test_index_with_zero_threads_negative(self):
-        with self.assertRaises(ValueError) as raised_exception:
-            self.inst.index(0)
-        self.assertEqual(
-            raised_exception.exception.args[0],
-            'number of threads must be more than 1')
+        self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table', })
 
     def test_delete_index(self):
         with patch('connector.Connector.es.indices.delete') as mock_es:
@@ -142,20 +97,11 @@ class TestApp(unittest.TestCase):
         with patch('connector.create_engine') as mocked_engine:
             with patch('connector.MetaData') as mocked_metadata:
                 with patch('connector.Table') as mocked_table:
-                    mocked_table.return_value.primary_key.columns.values()[0].name = 'id'
-                    inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
+                    mocked_table.return_value.primary_key.columns.values()[
+                        0].name = 'id'
+                    inst = Connector(
+                        'somedb', 'sometable', 'someesindex', 'somedb_type')
                     self.assertEqual(inst.primary_key, 'id')
-
-
-    def test_index_by_id(self):
-        with patch('connector.create_engine') as mocked_engine:
-            with patch('connector.MetaData') as mocked_metadata:
-                with patch('connector.Table') as mocked_table:
-                    with patch('connector.Connector.es') as es_mocked:
-                        es_mocked.return_value.index = None
-                        inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
-                        self.assertEqual(inst.index_by_id(2), None)
-
 
 
 if __name__ == '__main__':

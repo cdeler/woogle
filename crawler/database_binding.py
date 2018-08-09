@@ -2,37 +2,130 @@ from models import Article, base
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+try:
+    from scrapy.http import HtmlResponse
+except Exception:
+    pass
+import requests
 
-db_string = "postgres://username:password@localhost/dbname"
-db = create_engine(db_string)
-
-Session = sessionmaker(db)
-session = Session()
-base.metadata.create_all(db)
+import WikiResponseProcessor
 
 
-def insert(*args, **kwargs):
+def init_db():
+    db_string = "postgres://username:password@localhost/dbname"
+    db = create_engine(db_string)
+
+    Session = sessionmaker(db)
+    session = Session()
+    base.metadata.create_all(db)
+    return session
+
+
+def read(session, id=None, title=None, url=None):
+    if id:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.id == id).first()
+    elif title:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.title == title).first()
+    elif url:
+        return session.query(
+            Article.title,
+            Article.url,
+            Article.text).filter(
+            Article.url == url).first()
+    else:
+        articles = session.query(Article.title, Article.url, Article.text)
+        return articles
+
+
+def insert(session, *args, **kwargs):
     session.add(Article(*args, **kwargs))
     session.commit()
 
 
-def delete_all():
-    session.query(Article).delete()
+def update(session, id, title, url, text, links):
+    session.query(Article).filter(Article.id == id).update(
+        {'title': title, 'url': url, 'text': text, 'links': links})
     session.commit()
 
 
-def update():
-    pass
+def reparse_by_id(session, id):
+    url = session.query(Article.url).filter(Article.id == id).first()[0]
+    response = requests.get(url)
+    response = HtmlResponse(url=url, body=response.content)
+    WikiResponseProcessor.DBResponseProcessor().process(response, id_to_update=id)
 
 
-def read():
-    articles = session.query(Article)
-    for article in articles:
-        print(article.title)
+def delete(session, id=None, title=None, url=None):
+    if id:
+        session.query(Article.id).filter(Article.id == id).delete()
+    elif title:
+        session.query(Article.title).filter(Article.title == title).delete()
+    elif url:
+        session.query(Article.url).filter(Article.url == url).delete()
+    else:
+        session.query(Article).delete()
+    session.commit()
 
 
-if __name__ == '__main__':
-    insert(title="some title", url="some url", text='some text')
-    insert(title="some title 2", url="some url 2", text='some text 2')
-    read()
-    delete_all()
+def get_rows(ses):
+    """
+    Function to get amount of rows in a table.
+
+    :param session: session establishes all conversations with the database and represents a “holding zone”.
+    :type session: sqlalchemy.session
+    :returns: integer amount of rows in table
+    """
+    return ses.query(Article).count()
+
+
+def get_urls(session):
+    """
+    Function to get all urls of article in a table.
+
+    :param session: session establishes all conversations with the database and represents a “holding zone”.
+    :type session: sqlalchemy.session
+    :returns: integer amount of rows in table
+    """
+    url = session.query(Article.url)
+    res = [u[0] for u in url]
+    return res
+
+
+def get_links_url(session, url):
+    """
+    Function to get all urls that referred on other article.
+
+    :param session: session establishes all conversations with the database and represents a “holding zone”.
+    :type session: sqlalchemy.session.
+    :param url: url of article with dependicies.
+    :type url: str.
+    :returns: list of strings - list of urls
+    """
+    url = session.query(Article.links).filter(Article.url == url)
+    return [u[0].split() for u in url][0]
+
+
+def update_page_rank(session, url, pagerank):
+    """
+    Function to update page rank by id.
+
+    :param session: session establishes all conversations with the database and represents a “holding zone”.
+    :type session: sqlalchemy.session.
+    :param url: url of article.
+    :type url: str.
+    :param pagerank: new pagerank for artiocle.
+    :type pagerank: float
+    :returns: None
+    """
+    url = session.query(Article.page_rank).filter(Article.url == url).update({
+        'page_rank': pagerank
+    })
+    session.commit()
