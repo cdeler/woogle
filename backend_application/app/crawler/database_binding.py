@@ -1,4 +1,4 @@
-from models import Article, base
+from crawler.models import Article, base
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +8,8 @@ except Exception:
     pass
 import requests
 
-import WikiResponseProcessor
+from crawler import WikiResponseProcessor
+
 
 
 def init_db():
@@ -75,7 +76,7 @@ def delete(session, id=None, title=None, url=None):
     session.commit()
 
 
-def get_rows(ses):
+def get_rows(session):
     """
     Function to get amount of rows in a table.
 
@@ -83,7 +84,8 @@ def get_rows(ses):
     :type session: sqlalchemy.session
     :returns: integer amount of rows in table
     """
-    return ses.query(Article).count()
+    return session.query(Article).count()
+
 
 
 def get_urls(session):
@@ -95,8 +97,8 @@ def get_urls(session):
     :returns: integer amount of rows in table
     """
     url = session.query(Article.url)
-    res = [u[0] for u in url]
-    return res
+    return [u[0] for u in url]
+
 
 
 def get_links_url(session, url):
@@ -129,3 +131,4 @@ def update_page_rank(session, url, pagerank):
         'page_rank': pagerank
     })
     session.commit()
+

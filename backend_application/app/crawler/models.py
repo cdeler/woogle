@@ -8,7 +8,7 @@ class Article(base):
     __tablename__ = 'wikisearch_article'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     title = Column(VARCHAR(255))
-    url = Column(VARCHAR(255))
+    url = Column(VARCHAR(1000))
     text = Column(TEXT)
     links = Column(TEXT)
     page_rank = Column(FLOAT, default=0)
