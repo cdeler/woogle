@@ -46,7 +46,6 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
         :return: None
         """
 
-        path = os.path.join(path, f"{title_text}.txt")
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
