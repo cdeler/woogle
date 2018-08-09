@@ -1,62 +1,62 @@
+"""
+Module to compute pagerank from database.
+Algorithm based on 'https://en.wikipedia.org/wiki/PageRank'
+"""
 import itertools
 import numpy as np
 from crawler.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
 import time
+from functools import wraps
 
 
-SQUERE_ERROR = 1e-6
+SQUARE_ERROR = 1e-6
 
-def pageRank(M, d=0.85, squere_error=SQUERE_ERROR):
+def pageRank(adjacency_matrix, damping_factor=0.85, square_error=SQUARE_ERROR):
     """
     Function to get pagerank of the matrix.
 
-    :param M: matrix that represent graph of urls with dependicies.
-    :type M: np.array
-    :param d: damping factor.
-    :type d: float.
-    :param squere_error: difference between  two successive PageRank vectors.
-    :type squere_error: float.
+    :param adjacency_matrix: matrix that represent graph of urls with dependicies.
+    :type adjacency_matrix: np.array
+    :param damping_factor: damping factor.
+    :type damping_factor: float.
+    :param square_error: difference between  two successive PageRank vectors.
+    :type square_error: float.
     :returns: lists of pageranks.
     """
-    n_pages = M.shape[0]
-    v = np.random.rand(n_pages)
-
-    v = v/ v.sum()
-
-    last_v = np.ones((n_pages))
-    M_hat =  d*M + (1-d)/n_pages * np.ones((n_pages, n_pages))
-    while np.square(v - last_v).sum() > squere_error:
-        last_v = v
-        v = M_hat.dot(v)
-    return v
+    n_pages = adjacency_matrix.shape[0]
+    random_vect = np.random.rand(n_pages)
+    random_vect = random_vect/ random_vect.sum()
+    previous_vect = np.ones((n_pages))
+    M_hat= damping_factor*adjacency_matrix + (1-damping_factor)/n_pages * np.ones((n_pages, n_pages))
+    while np.square(random_vect - previous_vect).sum() > square_error:
+        previous_vect = random_vect
+        random_vect = M_hat.dot(random_vect)
+    return random_vect
 
 
 
 
-def create_graph(ses):
+def create_graph(session):
     """
     Function that create matrix from database.
 
-    :param ses: session with database.
-    :type sqlalchemy.session.
+    :param session: session with database.
+    :type session: sqlalchemy.session.
     :return: Graph with dependices.
     """
-    names = get_urls(ses)
-    x = np.zeros((len(names),), dtype={'names': names, 'formats': list(itertools.repeat('f4', len(names)))})
-
-    for i in names:
-        links = set(get_links_url(ses, i))
-        dependings = links & set(names)
+    urls = get_urls(session)
+    matrix = np.zeros((len(urls),), dtype={'names': urls, 'formats': list(itertools.repeat('f4', len(urls)))})
+    for i in urls:
+        links = set(get_links_url(session, i))
+        dependings = links & set(urls)
         if not dependings :
-
-            for j in range(len(x[i])):
-
-                x[i][j] = 1
+            for j in range(len(matrix[i])):
+                matrix[i][j] = 1
         while dependings:
             item = dependings.pop()
-            x[i][names.index(item)] = 1
+            matrix[i][urls.index(item)] = 1
+    return matrix
 
-    return x
 
 def convert_to_array(arr):
     """
@@ -68,36 +68,64 @@ def convert_to_array(arr):
     """
     return np.asarray([list(i) for i in arr.tolist()])
 
-def get_probabilyties(rows, new_x):
+def get_probabilyties(rows, matrix):
     """
     Function that equally distribute probability of each vector.
 
-    :param session: session with database.
-    :type session: sqlalchemy.session.
-    :param new_x: right array.
-    :type new_x: np.array.
+    :param rows: amount of rows in matrix.
+    :type rows: int.
+    :param matrix: right array.
+    :type matrix: np.array.
     :return: matrix.
     """
-    r = rows
-    M = np.empty((r, r))
-    for i in range(r):
+    blank_matrix = np.empty((rows, rows))
+    for i in range(rows):
         np.set_printoptions(precision=3)
-        M[:, i] = new_x[:, i] / new_x[:, i].sum()
-    return M
+        blank_matrix[:, i] = matrix[:, i] / matrix[:, i].sum()
+    return blank_matrix
 
+
+def _test_working_time(debug=False):
+    """
+    Decorator to measure the running time
+    :param debug: status of running program.
+    :return: inner function.
+    """
+    def decorator(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            if debug:
+                started_time = time.time()
+                result = func(*args, **kwargs)
+                print(time.time() - started_time)
+            else:
+                result = func(*args, **kwargs)
+            return result
+        return inner
+    return decorator
+
+
+@_test_working_time()
 def compute_pagerank():
     """
     Compute pagerank
+
+    :returns bool - true if computed successfully, false if computation failed.
     """
-    t1 = time.time()
     success = True
     try:
-        ses = init_db()
-        rate = dict(zip(get_urls(ses), pageRank(get_probabilyties(get_rows(ses), convert_to_array(create_graph(ses))))))
+        session = init_db()
+        rate = dict(zip(get_urls(session),
+                        pageRank(
+                            get_probabilyties(get_rows(session),
+                            convert_to_array(create_graph(session)))
+                        )))
         for i, j in rate.items():
-            update_page_rank(ses, i, j)
-    except Exception as e:
+            update_page_rank(session, i, j)
+    except Exception:
         success = False
-        print(f'error {type(e).__name__}: {e.args[0]}')
-    print(t1 - time.time())
     return success
+
+
+
+

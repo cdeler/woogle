@@ -19,7 +19,6 @@ class Connector:
     elasticsearch.
     """
     es = Elasticsearch()
-
     def __init__(self, database, table, elastic_index, elastic_doc_type):
         """
         Initialize instance.
@@ -121,17 +120,18 @@ class Connector:
         :param id: id of seperate article.
         :return: None.
         """
-        set = None
+        selection = None
         features = []
         if id:
             with self.engine.connect() as conn:
                 select_statement = self.table.select().where(self.table.c.id == id)
-                set = conn.execute(select_statement).fetchall()
+                selection = conn.execute(select_statement).fetchall()
         else:
-            set = self.table_set
+            selection = self.table_set
 
-        for row in set:
+        for row in selection:
             features.append(self._index(row))
+
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(asyncio.wait(features))
@@ -149,8 +149,4 @@ class Connector:
             raise ElasticConnectionError(
                 "Connection to elasticsearch has failed") from e
 
-
-if __name__ == '__main__':
-    con = Connector('postgresql:///test','wiki','test','article')
-    con.index()
 
