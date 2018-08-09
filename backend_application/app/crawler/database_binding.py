@@ -11,6 +11,7 @@ import requests
 from crawler import WikiResponseProcessor
 
 
+
 def init_db():
     db_string = "postgres://username:password@localhost/dbname"
     db = create_engine(db_string)
@@ -86,6 +87,7 @@ def get_rows(session):
     return session.query(Article).count()
 
 
+
 def get_urls(session):
     """
     Function to get all urls of article in a table.
@@ -96,6 +98,7 @@ def get_urls(session):
     """
     url = session.query(Article.url)
     return [u[0] for u in url]
+
 
 
 def get_links_url(session, url):

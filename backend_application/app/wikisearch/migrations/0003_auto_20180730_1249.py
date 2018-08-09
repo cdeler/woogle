@@ -13,6 +13,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='article',
             name='page_rank',
-            field=models.IntegerField(default=0, help_text='rank of the page', verbose_name='page_rank'),
+            field=models.IntegerField(
+                default=0,
+                help_text='rank of the page',
+                verbose_name='page_rank'),
         ),
     ]

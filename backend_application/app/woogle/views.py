@@ -3,4 +3,4 @@ from django.shortcuts import render_to_response
 
 
 def main(request):
-    return HttpResponse("index.html")
+    return HttpResponse("search_page.html")

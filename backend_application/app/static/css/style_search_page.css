@@ -1,15 +1,14 @@
 body {
-  background: #eee;
+  background: #FFFFFF;
   font: 12px Lucida sans, Arial, Helvetica, sans-serif;
 	color: #333;
-	text-align: center;
 }
 
 a {
 	color: #2A679F;
 }
-/*========*/
 
+/* STYLE SEARCH TEXT INPUT & BUTTON */
 .form-wrapper {
 	background-color: #f6f6f6;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eae8e8));
@@ -110,4 +109,37 @@ a {
 
 .form-wrapper #submit::-moz-focus-inner {
 	border: 0;
+}
+
+/* STYLE LIST VIEW */
+.cl_form_list_view {
+    margin-left: 15%;
+}
+
+.cl_form_list_view a {
+    text-decoration: none;
+}
+
+.cl_form_list_view #id_a_title {
+    color: #2A679F;
+    font-size: large;
+}
+.cl_form_list_view hr {
+    display: block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: 15%;
+    border-style: inset;
+    border-width: 1px;
+}
+
+.cl_form_list_view #id_a_url {
+    font-size: larger;
+    color: #015b1e;
+}
+
+.cl_form_list_view #id_p_content {
+    font-size: larger;
+    color: #4b4b4b;
 }

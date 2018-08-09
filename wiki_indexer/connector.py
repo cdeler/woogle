@@ -6,6 +6,7 @@ import requests
 import asyncio
 import aiohttp
 
+
 class DatabaseConnectionError(Exception):
     pass
 
@@ -86,7 +87,6 @@ class Connector:
             select_statement = self.table.select()
             result_set = conn.execute(select_statement)
         return result_set
-
 
     async def _index(self, row):
         """

@@ -79,10 +79,7 @@ class TestApp(unittest.TestCase):
                 with patch('connector.Table') as mocked_table:
                     mocked_table.return_value.columns = [head]
                     inst = Connector("sad", 'sad', 'someesindex', 'sda')
-        self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table',})
-
-
-
+        self.assertEqual(inst.get_json_from_row(['Table']), {'sad': 'Table', })
 
     def test_delete_index(self):
         with patch('connector.Connector.es.indices.delete') as mock_es:
@@ -100,11 +97,11 @@ class TestApp(unittest.TestCase):
         with patch('connector.create_engine') as mocked_engine:
             with patch('connector.MetaData') as mocked_metadata:
                 with patch('connector.Table') as mocked_table:
-                    mocked_table.return_value.primary_key.columns.values()[0].name = 'id'
-                    inst = Connector('somedb', 'sometable', 'someesindex', 'somedb_type')
+                    mocked_table.return_value.primary_key.columns.values()[
+                        0].name = 'id'
+                    inst = Connector(
+                        'somedb', 'sometable', 'someesindex', 'somedb_type')
                     self.assertEqual(inst.primary_key, 'id')
-
-
 
 
 if __name__ == '__main__':
