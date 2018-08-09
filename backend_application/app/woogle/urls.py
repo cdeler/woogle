@@ -24,5 +24,5 @@ import wikisearch.views as views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", views.search_page),
-    path("search/", views.get_user_query)
+    path("search/", views.send_query),
 ]

@@ -30,10 +30,10 @@ def porter(request: web.Request):
     try:
         # try get response
         response_obj = CONNECTOR.curl(request, request.method)
-        return web.Response(text=json.dumps(response_obj), status=200)
+        return web.Response(body=json.dumps(response_obj), status=200)
     except Exception as error:
         response_obj = {"status": "failed", "message": str(error)}
-        return web.Response(text=json.dumps(response_obj), status=500)
+        return web.Response(body=json.dumps(response_obj), status=500)
 
 
 @asyncio.coroutine
@@ -49,7 +49,10 @@ def init(loop, host, port):
     :return:
     """
     app = web.Application()
-    app.add_routes([web.get("/", porter)])
+    app.add_routes([
+        web.get("/", porter),
+        web.get("/getpage", porter)
+    ])
     handler = app._make_handler()
     server = yield from loop.create_server(handler, host, port)
     return server.sockets[0].getsockname()

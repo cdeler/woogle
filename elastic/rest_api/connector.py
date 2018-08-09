@@ -27,7 +27,6 @@ class Connector(object):
         self.add_mapping_and_setting()
         self.add_simple_data_files()
 
-
     def curl(self, request, method):
         """
         Depending on the request method, broadcasts different requests
@@ -35,29 +34,28 @@ class Connector(object):
         :param method: request method
         :return: response object
         """
+        index = request.query["index"]
+        doc_type = request.query["doc_type"]
+
         if method == "GET":
-            index = request.query["index"]
-            doc_type = request.query["doc_type"]
             search = request.query["search"]
-            return self.search(index=index, doc_type=doc_type, search=search)
+            search_mode = request.query["search_mode"]
+            return self.search(index=index, doc_type=doc_type, search=search, search_mode=search_mode)
 
         elif method == "DELETE":
-            index = request.query["index"]
-            doc_type = request.query["doc_type"]
             doc_id = request.query["id"]
             return self.es.delete(index=index, doc_type=doc_type, id=doc_id)
 
         elif method == "POST":
-            index = request.query["index"]
-            doc_type = request.query["doc_type"]
             doc_id = request.query["id"]
             body = request.query["body"]
             return self.es.index(index=index, doc_type=doc_type, id=doc_id, body=body)
 
-    def search(self, index, doc_type, search):
+    def search(self, index, doc_type, search, search_mode):
         """
         Search function
         :param index: index on es
+        :param search_mode:
         :param doc_type: doc_type on es
         :param search: search phrase
         :return: response object
@@ -68,7 +66,38 @@ class Connector(object):
         # for query with suggest
         main_search_query["suggest"]["title_suggestion"]["text"] = search
         response = self.es.search(index=index, doc_type=doc_type, body=main_search_query)
-        return response
+        return self.response_filter(response, search_mode)
+
+    @staticmethod
+    def response_filter(response, search_mode="normal"):
+        """
+        :param response:
+        :param search_mode:
+        :return:
+        """
+        response = response["suggest"]["title_suggestion"][0]["options"]
+        pages = []
+
+        tmp_dict = dict()
+        for i, key in enumerate(response):
+            if search_mode == "short":
+                pages.append(response[i]["_source"]["title"])
+            elif search_mode == "normal":
+                tmp_dict = response[i]["_source"]
+                tmp_dict["content"] = response[i]["_source"]["content"][:100]
+                pages.append(tmp_dict)
+            else:
+                try:
+                    pageid = int(search_mode)
+                except ValueError as e:
+                    print(e)
+                else:
+                    if response[i]["_source"].get("pageid") == pageid:
+                        tmp_dict = response[i]["_source"]
+                        pages.append(tmp_dict)
+
+        rt = json.dumps(pages)
+        return rt
 
     @staticmethod
     def get_main_query_from_file() -> None:

@@ -8,13 +8,12 @@
     <script src="{% static "js/search_page_main.js" %}"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
-
 </head>
 <body>
 {#    search form     #}
     <form class="form-wrapper">
-        <input type="text" id="search" placeholder="Search for..." required onkeyup="send_user_query()">
-        <input type="submit" value="Search" id="submit">
+        <input type="text" id="search" autocomplete="on" placeholder="Search for..." required onkeyup="send_user_query('short')">
+        <input type="button" value="Search" id="submit" onclick="return send_user_query('normal')">
     </form>
 
     <form class="cl_form_list_view" id="id_form_list_view">
