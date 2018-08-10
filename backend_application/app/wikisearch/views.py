@@ -3,7 +3,6 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from wikisearch.models import Article
 from django.template import Context, loader
-import json
 # Create your views here.
 import requests
 from functools import reduce
@@ -52,39 +51,40 @@ class ArticleListView(ListView):
 # AUTOCOMPLETE SUGGESTION (need to set connection between rest api and django)
 def search_page(request):
     """
-
-    :param request:
-    :return:
+    loads the main page from the template
+    :param request: user request
+    :return: the main page
     """
     template = loader.get_template("search_page.html")
     html = template.render()
     return HttpResponse(html)
 
 
-def get_user_query(request):
+def send_query(request):
     """
-
-    :param request:
-    :return:
+    the url for interaction with the api is prepared and the data loading function is called
+    :param request: user request
+    :return: json object, which includes pages from elastic (in the required volume)
     """
-    if request.method == "GET":
-        user_query = request.GET.get("user_query")
-        find__title_pages = load_pages(user_query)
-        return HttpResponse(find__title_pages)
-
-
-def load_pages(user_query):
-    """
-
-    :param user_query:
-    :return:
-    """
-    # setting host/port with config.ini
+    # need create config file
     host = "rest_api"
     port = 5000
+    if request.method == "GET":
+        user_query = request.GET.get("user_query")
+        search_mode = request.GET.get("search_mode")
+        url = "http://{host}:{port}/?index=wiki&doc_type=page&search=%22{q}%22&search_mode={mode}".format(
+            q=user_query, host=host, port=port, mode=search_mode)
+        response = load_with_rest_api(url)
+        return HttpResponse(response)
 
-    url = "http://{host}:{port}/?index=wiki&doc_type=page&search=%22{q}%22".format(
-        q=user_query, host=host, port=port)
+
+def load_with_rest_api(url):
+    """
+    returns objects in response to get requests
+    :param url: address api
+    :return: json object
+    """
+    # setting host/port with config.ini
     try:
         response = requests.get(url, timeout=(40, 40)).json()
     except requests.exceptions.ReadTimeout:
@@ -92,19 +92,7 @@ def load_pages(user_query):
     except requests.exceptions.ConnectTimeout:
         print('Oops. Connection timeout occured!')
     else:
-        return change_response_json(response)
+        return response
 
 
-def change_response_json(obj_json):
-    """
 
-    :param obj_json:
-    :return:
-    """
-    array_dicts = obj_json["suggest"]["title_suggestion"][0]["options"]
-    pages = []
-    for i, key in enumerate(array_dicts):
-        pages.append(array_dicts[i]["_source"])
-        pages[i]["content"] = pages[i]["content"][:100]
-    rt = json.dumps(pages)
-    return rt
