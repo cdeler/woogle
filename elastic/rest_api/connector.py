@@ -58,6 +58,8 @@ class Connector(object):
         :param search_mode:
         :param doc_type: doc_type on es
         :param search: search phrase
+        :param search_mode:  indicates the amount of information needed
+                            (only titles / pages with a short text / pages with a short text)
         :return: response object
         """
         #  for main query
@@ -71,9 +73,9 @@ class Connector(object):
     @staticmethod
     def response_filter(response, search_mode="normal"):
         """
-        :param response:
-        :param search_mode:
-        :return:
+        :param response: json object
+        :param search_mode: normal = pages with a short text/ short = only titles / id = pages with a short text
+        :return: filtered json-object
         """
         response = response["suggest"]["title_suggestion"][0]["options"]
         pages = []

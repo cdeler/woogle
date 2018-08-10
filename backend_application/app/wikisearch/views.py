@@ -45,9 +45,9 @@ class ArticleListView(ListView):
 # AUTOCOMPLETE SUGGESTION (need to set connection between rest api and django)
 def search_page(request):
     """
-
-    :param request:
-    :return:
+    loads the main page from the template
+    :param request: user request
+    :return: the main page
     """
     template = loader.get_template("search_page.html")
     html = template.render()
@@ -56,9 +56,9 @@ def search_page(request):
 
 def send_query(request):
     """
-
-    :param request:
-    :return:
+    the url for interaction with the api is prepared and the data loading function is called
+    :param request: user request
+    :return: json object, which includes pages from elastic (in the required volume)
     """
     # need create config file
     host = "rest_api"
@@ -74,9 +74,9 @@ def send_query(request):
 
 def load_with_rest_api(url):
     """
-
-    :param user_query:
-    :return:
+    returns objects in response to get requests
+    :param url: address api
+    :return: json object
     """
     # setting host/port with config.ini
     try:
