@@ -1,9 +1,17 @@
 import scrapy
 
-import WikiResponseProcessor
-import setting_language as setting
+import crawler.WikiResponseProcessor as WikiResponseProcessor
+import crawler.setting_language as setting
 
 import os
+
+from scrapy.crawler import CrawlerProcess
+
+process = CrawlerProcess({
+    'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
+    'LOG_FILE': 'log.txt',
+    'LOG_LEVEL': 'INFO'
+})
 
 
 def arg_str2dict(arg):
@@ -50,7 +58,7 @@ def choose_language(arg):
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
-    def __init__(self, arg=None):
+    def __init__(self, stats, arg=None):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
             num_threads: count threads
@@ -71,6 +79,9 @@ class WikiSpider(scrapy.Spider):
         else:
             self.args = arg
 
+        self.stats = stats
+        self.stats.set_value('xaxa', 0)
+
         # setup language setting
         self.language = choose_language(self.args)
 
@@ -79,6 +90,10 @@ class WikiSpider(scrapy.Spider):
         self.allowed_domains = [
             setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
         self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.stats)
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
@@ -116,4 +131,5 @@ class WikiSpider(scrapy.Spider):
             '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
         for page in pages:
             if page is not None:
+                self.stats.inc_value('pages_crawled')
                 yield response.follow(page, callback=self.parse_wiki_pages)
