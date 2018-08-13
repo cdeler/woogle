@@ -7,7 +7,6 @@ import os
 import crawler.setting_language as setting
 from crawler.WikiSpider import process
 from crawler.WikiSpider import WikiSpider
-# new realis
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
@@ -83,14 +82,5 @@ if __name__ == "__main__":
     # call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
     #      "-a", f'arg={arguments_for_crawler}'])
 
-    try:
-        process.crawl(WikiSpider, arg=arguments_for_crawler)
-        stat = list(process.crawlers)[0].stats
-        print(stat.get_stats())
-        process.start()  # the script will block here until the crawling is finished
-    except Exception as e:
-        print(e)
-
-    print("FINISH")
-    for k, v in stat.get_stats().items():
-        print(k, ":", v)
+    process.crawl(WikiSpider, arg=arguments_for_crawler)
+    process.start()  # the script will block here until the crawling is finished

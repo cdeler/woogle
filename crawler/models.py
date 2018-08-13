@@ -28,6 +28,7 @@ class CrawlerStats(base):
     language = Column(VARCHAR(2))
     pages_crawled = Column(INTEGER)
     current_page = Column(VARCHAR(255))
-    progress = Column(VARCHAR(50))  # working, finish
+    state_id = Column(INTEGER)
+    state = Column(VARCHAR(50))  # working, finish
     finish_time = Column(TIMESTAMP, nullable=True)
     finish_reason = Column(VARCHAR(50), nullable=True)

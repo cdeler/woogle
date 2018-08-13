@@ -1,14 +1,14 @@
-from crawler.models import Article, base
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 try:
     from scrapy.http import HtmlResponse
 except Exception:
     pass
 import requests
 
-import crawler.WikiResponseProcessor as WikiResponseProcessor
+from crawler.models import Article, CrawlerStats, base
+from crawler import WikiResponseProcessor
 
 
 def init_db():
@@ -129,3 +129,43 @@ def update_page_rank(session, url, pagerank):
         'page_rank': pagerank
     })
     session.commit()
+
+
+class CrawlerStatsActions():
+    """
+    class for actions with a table "CrawlerStats"
+    """
+
+    def create(self, *args, **kwargs):
+        """
+        Create row in table "CrawlerStats" for crawler
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        self.session = init_db()
+        self.instance = CrawlerStats(*args, **kwargs)
+        self.session.add(self.instance)
+        self.session.commit()
+
+    def update(self, *args, **kwargs):
+        """
+        Update row in table "CrawlerStats" for crawler
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        if 'pages_crawled' in kwargs:
+            self.instance.pages_crawled = kwargs['pages_crawled']
+        if 'current_page' in kwargs:
+            self.instance.current_page = kwargs['current_page']
+        if 'state_id' in kwargs:
+            self.instance.state_id = kwargs['state_id']
+        if 'state' in kwargs:
+            self.instance.state = kwargs['state']
+        if 'finish_time' in kwargs:
+            self.instance.finish_time = kwargs['finish_time']
+        if 'finish_reason' in kwargs:
+            self.instance.finish_reason = kwargs['finish_reason']
+
+        self.session.commit()

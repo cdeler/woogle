@@ -1,9 +1,16 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
+from scrapy import signals
+import datetime
 
 import crawler.WikiResponseProcessor as WikiResponseProcessor
 import crawler.setting_language as setting
 import crawler.database_binding as database_binding
+
+
+STATE_CRAWLER = {1: 'Working',
+                 2: 'Shutdown',
+                 3: 'Finished'}
 
 process = CrawlerProcess({
     'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
@@ -77,13 +84,6 @@ class WikiSpider(scrapy.Spider):
         else:
             self.args = arg
 
-        # stats
-        self.stats = stats
-        self.stats.set_value('pages_crawled', 0)
-
-        #write in database
-        # session=database_binding.init_db()
-
         # setup language setting
         self.language = choose_language(self.args)
 
@@ -93,9 +93,18 @@ class WikiSpider(scrapy.Spider):
             setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
         self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
 
+        # stats
+        self.stats = stats
+        self.stats.set_value('current_page', self.start_urls[0])
+        self.stats.set_value('pages_crawled', 0)
+
+        self.add_start_info_db()
+
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
-        return cls(crawler.stats, *args, **kwargs)
+        spider = cls(crawler.stats, *args, **kwargs)
+        crawler.signals.connect(spider.closed, signal=signals.spider_closed)
+        return spider
 
     def parse(self, response):
         """ Method that parses page of wiki articles' list
@@ -105,6 +114,7 @@ class WikiSpider(scrapy.Spider):
         """
         # stats
         self.stats.set_value('current_page', response.url)
+        self.add_curr_info_db()
         yield from self.parse_wiki_pages(response)
 
         next_page = response.xpath(
@@ -112,6 +122,8 @@ class WikiSpider(scrapy.Spider):
 
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
+        else:
+            self.stats.set_value('current_page', None)
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
@@ -138,3 +150,67 @@ class WikiSpider(scrapy.Spider):
         for page in pages:
             if page is not None:
                 yield response.follow(page, callback=self.parse_wiki_pages)
+
+    def add_start_info_db(self):
+        """
+        Add start informations to database
+        Start informations:
+               start_time: start date and start time
+               language: wikipedia languag
+               pages_crawled: count crawled pages
+               current_page: current url page with article
+               state and state_id: state crawler from STATE_CRAWLER
+        :return: None
+        """
+        # write in database
+        self.db_actions = database_binding.CrawlerStatsActions()
+        self.db_actions.create(
+            start_time=str(datetime.datetime.now()),
+            language=self.language,
+            pages_crawled=0,
+            current_page=self.start_urls[0],
+            state_id=1,
+            state=STATE_CRAWLER[1])
+
+    def add_curr_info_db(self):
+        """
+        Add current informations to database
+        Current informations:
+               pages_crawled: count crawled pages
+               current_page: current url page with article
+        :return: None
+        """
+        self.db_actions.update(
+            pages_crawled=self.stats.get_value('pages_crawled'),
+            current_page=self.stats.get_value('current_page'))
+
+    def add_finish_info_db(self, reason):
+        """
+         Add start informations to database
+         Start informations:
+                pages_crawled: count crawled pages
+                current_page: current url page with article
+                state and state_id: state crawler from STATE_CRAWLER
+                finish_time: finish time
+                finish_reason: finish reason from stats
+         :return: None
+         """
+        if self.stats.get_value('current_page'):
+            self.db_actions.update(
+                pages_crawled=self.stats.get_value('pages_crawled'),
+                current_page=self.stats.get_value('current_page'),
+                state_id=2,
+                state=STATE_CRAWLER[2],
+                finish_time=datetime.datetime.now(),
+                finish_reason=reason)
+        else:
+            self.db_actions.update(
+                pages_crawled=self.stats.get_value('pages_crawled'),
+                current_page=self.stats.get_value('current_page'),
+                state_id=3,
+                state=STATE_CRAWLER[3],
+                finish_time=datetime.datetime.now(),
+                finish_reason=reason)
+
+    def closed(self, reason):
+        self.add_finish_info_db(reason)
