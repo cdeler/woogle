@@ -4,7 +4,7 @@ import os
 import errno
 import re
 
-import crawler.database_binding
+import crawler.database_binding as database_binding
 
 NOT_USED_CHARACTERS_IN_DIRECTORY_MODE = [
     '/', '\\', ':', '*', '?', '"', '<', '>', '|']

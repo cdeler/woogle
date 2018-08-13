@@ -8,11 +8,11 @@ except Exception:
     pass
 import requests
 
-import crawler.WikiResponseProcessor
+import crawler.WikiResponseProcessor as WikiResponseProcessor
 
 
 def init_db():
-    db_string = "postgres://username:password@localhost/dbname"
+    db_string = "postgres://postgres:password@localhost/crawler_bd"
     db = create_engine(db_string)
 
     Session = sessionmaker(db)

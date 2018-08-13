@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, ForeignKey
+from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 base = declarative_base()
@@ -19,3 +19,15 @@ class Article(base):
 #     article_id = Column(INTEGER, ForeignKey('articles.id'), primary_key=True)
 #     meta_key = Column(VARCHAR(255))
 #     value = Column(VARCHAR(255))
+
+
+class CrawlerStats(base):
+    __tablename__ = 'crawler_stats'
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    start_time = Column(TIMESTAMP)
+    language = Column(VARCHAR(2))
+    pages_crawled = Column(INTEGER)
+    current_page = Column(VARCHAR(255))
+    progress = Column(VARCHAR(50))  # working, finish
+    finish_time = Column(TIMESTAMP, nullable=True)
+    finish_reason = Column(VARCHAR(50), nullable=True)
