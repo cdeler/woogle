@@ -7,6 +7,7 @@ import os
 import crawler.setting_language as setting
 from crawler.WikiSpider import process
 from crawler.WikiSpider import WikiSpider
+from PidFile import PidFile
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
@@ -81,6 +82,6 @@ if __name__ == "__main__":
 
     # call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
     #      "-a", f'arg={arguments_for_crawler}'])
-
-    process.crawl(WikiSpider, arg=arguments_for_crawler)
-    process.start()  # the script will block here until the crawling is finished
+    with PidFile():
+        process.crawl(WikiSpider, arg=arguments_for_crawler)
+        process.start()  # the script will block here until the crawling is finished
