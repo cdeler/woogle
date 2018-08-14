@@ -169,3 +169,30 @@ class CrawlerStatsActions():
             self.instance.finish_reason = kwargs['finish_reason']
 
         self.session.commit()
+
+    @staticmethod
+    def get_shutdown_crawler(language, state_id):
+        CrawlerStatsActions.refresh_crawlers()
+        session = init_db()
+        stats_crawlers = session.query(CrawlerStats).filter_by(
+            language=language, state_id=state_id).all()
+        print(stats_crawlers)
+        if len(stats_crawlers) != 0:
+            if len(stats_crawlers) != 1:
+                print(
+                    "Warning: there are many crawlers with the state 'shutdown'. Selected the first ")
+            bd_actions = CrawlerStatsActions()
+            bd_actions.session = session
+            bd_actions.instance = stats_crawlers[0]
+            return bd_actions
+        else:
+            return None
+
+    @staticmethod
+    def refresh_crawlers():
+        session = init_db()
+        crawlers = session.query(CrawlerStats).filter_by(state_id=1).all()
+        for c in crawlers:
+            c.state = 'Shutdown'
+            c.state_id = 2
+        session.commit()

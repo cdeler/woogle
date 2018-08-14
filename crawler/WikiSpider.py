@@ -7,10 +7,10 @@ import crawler.WikiResponseProcessor as WikiResponseProcessor
 import crawler.setting_language as setting
 import crawler.database_binding as database_binding
 
-
-STATE_CRAWLER = {1: 'Working',
-                 2: 'Shutdown',
-                 3: 'Finished'}
+STATE_CRAWLER = {'Working': 1,
+                 'Shutdown': 2,
+                 'Finished': 3,
+                 'Delegated': 4}
 
 process = CrawlerProcess({
     'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
@@ -86,17 +86,10 @@ class WikiSpider(scrapy.Spider):
 
         # setup language setting
         self.language = choose_language(self.args)
-
-        self.start_urls = [
-            setting.LANGUAGE_SETTING[self.language]['start_urls']]
-        self.allowed_domains = [
-            setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
-        self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
-
         # stats
         self.stats = stats
-        self.stats.set_value('current_page', self.start_urls[0])
-        self.stats.set_value('pages_crawled', 0)
+
+        self.init_params()
 
         self.add_start_info_db()
 
@@ -151,6 +144,33 @@ class WikiSpider(scrapy.Spider):
             if page is not None:
                 yield response.follow(page, callback=self.parse_wiki_pages)
 
+    def init_params(self):
+        self.allowed_domains = [
+            setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
+        self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
+
+        shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
+            self.language, 2)
+
+        if shutdown_crawler:
+            print("selected shutdown crawler: ", shutdown_crawler.instance.id)
+            self.start_urls = [shutdown_crawler.instance.current_page]
+            self.stats.set_value(
+                'pages_crawled',
+                shutdown_crawler.instance.pages_crawled)
+
+            shutdown_crawler.update(
+                state='Delegated',
+                state_id=STATE_CRAWLER['Delegated'])
+
+        else:
+            print("init new crawler ")
+            self.start_urls = [
+                setting.LANGUAGE_SETTING[self.language]['start_urls']]
+            self.stats.set_value('pages_crawled', 0)
+
+        self.stats.set_value('current_page', self.start_urls[0])
+
     def add_start_info_db(self):
         """
         Add start informations to database
@@ -163,14 +183,15 @@ class WikiSpider(scrapy.Spider):
         :return: None
         """
         # write in database
-        self.db_actions = database_binding.CrawlerStatsActions()
-        self.db_actions.create(
-            start_time=str(datetime.datetime.now()),
-            language=self.language,
-            pages_crawled=0,
-            current_page=self.start_urls[0],
-            state_id=1,
-            state=STATE_CRAWLER[1])
+        if self.args and 'output' in self.args and self.args['output'] == 'db':
+            self.db_actions = database_binding.CrawlerStatsActions()
+            self.db_actions.create(
+                start_time=str(datetime.datetime.now()),
+                language=self.language,
+                pages_crawled=0,
+                current_page=self.start_urls[0],
+                state_id=STATE_CRAWLER['Working'],
+                state='Working')
 
     def add_curr_info_db(self):
         """
@@ -180,9 +201,10 @@ class WikiSpider(scrapy.Spider):
                current_page: current url page with article
         :return: None
         """
-        self.db_actions.update(
-            pages_crawled=self.stats.get_value('pages_crawled'),
-            current_page=self.stats.get_value('current_page'))
+        if self.args and 'output' in self.args and self.args['output'] == 'db':
+            self.db_actions.update(
+                pages_crawled=self.stats.get_value('pages_crawled'),
+                current_page=self.stats.get_value('current_page'))
 
     def add_finish_info_db(self, reason):
         """
@@ -195,22 +217,23 @@ class WikiSpider(scrapy.Spider):
                 finish_reason: finish reason from stats
          :return: None
          """
-        if self.stats.get_value('current_page'):
-            self.db_actions.update(
-                pages_crawled=self.stats.get_value('pages_crawled'),
-                current_page=self.stats.get_value('current_page'),
-                state_id=2,
-                state=STATE_CRAWLER[2],
-                finish_time=datetime.datetime.now(),
-                finish_reason=reason)
-        else:
-            self.db_actions.update(
-                pages_crawled=self.stats.get_value('pages_crawled'),
-                current_page=self.stats.get_value('current_page'),
-                state_id=3,
-                state=STATE_CRAWLER[3],
-                finish_time=datetime.datetime.now(),
-                finish_reason=reason)
+        if self.args and 'output' in self.args and self.args['output'] == 'db':
+            if self.stats.get_value('current_page'):
+                self.db_actions.update(
+                    pages_crawled=self.stats.get_value('pages_crawled'),
+                    current_page=self.stats.get_value('current_page'),
+                    state_id=STATE_CRAWLER['Shutdown'],
+                    state='Shutdown',
+                    finish_time=datetime.datetime.now(),
+                    finish_reason=reason)
+            else:
+                self.db_actions.update(
+                    pages_crawled=self.stats.get_value('pages_crawled'),
+                    current_page=self.stats.get_value('current_page'),
+                    state_id=STATE_CRAWLER['Finished'],
+                    state='Finished',
+                    finish_time=datetime.datetime.now(),
+                    finish_reason=reason)
 
     def closed(self, reason):
         self.add_finish_info_db(reason)
