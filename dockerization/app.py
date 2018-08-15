@@ -1,8 +1,7 @@
 import argparse
 import functools
 import logging
-from subprocess import call
-import os
+#from subprocess import call
 
 import crawler.setting_language as setting
 from crawler.WikiSpider import process
@@ -83,5 +82,6 @@ if __name__ == "__main__":
     # call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
     #      "-a", f'arg={arguments_for_crawler}'])
     with PidFile():
+        logging.info("Start crawler")
         process.crawl(WikiSpider, arg=arguments_for_crawler)
         process.start()  # the script will block here until the crawling is finished
