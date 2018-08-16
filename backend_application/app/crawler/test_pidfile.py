@@ -1,5 +1,6 @@
 import unittest
-import PidFile
+from PidFile import PidFile
+from PidFile import CrawlerException
 import os
 from random import randint
 
@@ -9,7 +10,7 @@ class TestPidFile(unittest.TestCase):
     def test__file_not_exist__positive(self):
         name_file = f'test_pidfile_{randint(1,10000)}'
 
-        with PidFile.PidFile(path=os.path.curdir, name=name_file) as pidfile:
+        with PidFile(path=os.path.curdir, name=name_file) as pidfile:
             # check_pidfile
             self.assertIsNotNone(pidfile)
 
@@ -42,7 +43,7 @@ class TestPidFile(unittest.TestCase):
         f = open(os.path.join(os.path.curdir, name_file), "x")
         f.close()
 
-        with PidFile.PidFile(path=os.path.curdir, name=name_file) as pidfile:
+        with PidFile(path=os.path.curdir, name=name_file) as pidfile:
             # check_pidfile
             self.assertIsNotNone(pidfile)
 
@@ -74,8 +75,8 @@ class TestPidFile(unittest.TestCase):
 
         # create file
         with open(os.path.join(os.path.curdir, name_file), "x"):
-            with self.assertRaises(PidFile.CrawlerException) as raised_exception:
-                with PidFile.PidFile(path=os.path.curdir, name=name_file):
+            with self.assertRaises(CrawlerException) as raised_exception:
+                with PidFile(path=os.path.curdir, name=name_file):
                     pass
             self.assertEqual(raised_exception.exception.args, ())
 
