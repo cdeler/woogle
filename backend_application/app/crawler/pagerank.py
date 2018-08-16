@@ -55,7 +55,6 @@ def create_graph(session):
         while dependings:
             item = dependings.pop()
             matrix[urls.index(i)][urls.index(item)] = 1
-    print(matrix)
     return matrix.transpose()
 
 
