@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     arguments_for_crawler = functools.reduce(
         lambda x, y: x + y, [f"{key}={value} " for key, value in arg.items()], "")
-    print(arguments_for_crawler)
+    logging.info(f"Crawler starts with options: {arguments_for_crawler}")
     # call crawler with given parameters
     # command for running looks like: scrapy runspider spider.py -a [arg1=val1
     # arg2=val2 ...]

@@ -2,6 +2,7 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy import signals
 import datetime
+import logging
 
 import crawler.WikiResponseProcessor as WikiResponseProcessor
 import crawler.setting_language as setting
@@ -84,13 +85,13 @@ class WikiSpider(scrapy.Spider):
         else:
             self.args = arg
 
-        # setup language setting
+        # init language
         self.language = choose_language(self.args)
         # stats
         self.stats = stats
-
+        # init languge params (next page, start page, etc.)
         self.init_params()
-
+        # init crawler in database
         self.add_start_info_db()
 
     @classmethod
@@ -107,7 +108,9 @@ class WikiSpider(scrapy.Spider):
         """
         # stats
         self.stats.set_value('current_page', response.url)
+        # database
         self.add_curr_info_db()
+
         yield from self.parse_wiki_pages(response)
 
         next_page = response.xpath(
@@ -116,6 +119,7 @@ class WikiSpider(scrapy.Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
         else:
+            # stats
             self.stats.set_value('current_page', None)
 
     def parse_wiki_pages(self, response):
@@ -145,15 +149,20 @@ class WikiSpider(scrapy.Spider):
                 yield response.follow(page, callback=self.parse_wiki_pages)
 
     def init_params(self):
+        logging.info('Init language options')
+
         self.allowed_domains = [
             setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
         self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
 
+        # get shutdown_crawler
         shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
-            self.language, 2)
+            self.language, STATE_CRAWLER['Shutdown'])
 
+        # if shutdown crawler is exist
         if shutdown_crawler:
-            print("selected shutdown crawler: ", shutdown_crawler.instance.id)
+            logging.info(
+                f"Selected shutdown crawler with id: {shutdown_crawler.instance.id}")
             self.start_urls = [shutdown_crawler.instance.current_page]
             self.stats.set_value(
                 'pages_crawled',
@@ -164,7 +173,7 @@ class WikiSpider(scrapy.Spider):
                 state_id=STATE_CRAWLER['Delegated'])
 
         else:
-            print("init new crawler ")
+            logging.info("Init new crawler")
             self.start_urls = [
                 setting.LANGUAGE_SETTING[self.language]['start_urls']]
             self.stats.set_value('pages_crawled', 0)
