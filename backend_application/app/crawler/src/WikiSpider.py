@@ -4,9 +4,9 @@ from scrapy import signals
 import datetime
 import logging
 
-import src.WikiResponseProcessor as WikiResponseProcessor
-import src.setting_language as setting
-import src.database_binding as database_binding
+import WikiResponseProcessor as WikiResponseProcessor
+import setting_language as setting
+import database_binding as database_binding
 
 STATE_CRAWLER = {'Working': 1,
                  'Shutdown': 2,

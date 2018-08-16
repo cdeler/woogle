@@ -4,7 +4,7 @@ import os
 import errno
 import re
 
-import src.database_binding as database_binding
+import database_binding as database_binding
 
 NOT_USED_CHARACTERS_IN_DIRECTORY_MODE = [
     '/', '\\', ':', '*', '?', '"', '<', '>', '|']
