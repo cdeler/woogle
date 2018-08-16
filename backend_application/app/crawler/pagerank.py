@@ -58,11 +58,11 @@ def create_graph(session):
     print(matrix)
     return matrix.transpose()
 
-print(create_graph(init_db()))
 
 
 
-def get_probabilyties(rows, matrix):
+
+def get_probabilities(rows, matrix):
     """
     Function that equally distribute probability of each vector.
 
@@ -111,7 +111,7 @@ def compute_pagerank():
     try:
         rate = dict(zip(get_urls(session),
                         pageRank(
-                            get_probabilyties(get_rows(session),
+                            get_probabilities(get_rows(session),
                             create_graph(session))
                         )))
         for i, j in rate.items():

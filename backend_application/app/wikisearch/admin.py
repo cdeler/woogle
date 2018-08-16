@@ -8,9 +8,12 @@ from crawler.WikiSpider import execute_spider
 from django.urls import path
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+import configparser
 
 from wikisearch.models import Article
 
+config = configparser.ConfigParser()
+config.read('conf.ini')
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
@@ -30,7 +33,7 @@ class ArticleAdmin(admin.ModelAdmin):
         """
         result = True
         for row in queryset.values('id'):
-            response = requests.post("http://0.0.0.0:9999", data = str(row['id']))
+            response = requests.post(config['connector']['host'], data = str(row['id']))
             if response.content.decode('ascii') != f'{str(row["id"])} is executed':
                 result = False
         if result:
@@ -70,7 +73,7 @@ class ArticleAdmin(admin.ModelAdmin):
          to elasticsearch service.
         """
         try:
-            response = requests.post("http://0.0.0.0:9999", data='index')
+            response = requests.post(config['connector']['host'], data='index')
             if response.content.decode('ascii') == 'index is executed':
                 self.message_user(request, 'Connector has been successfully executed')
         except:
@@ -88,7 +91,6 @@ class ArticleAdmin(admin.ModelAdmin):
         else:
             self.message_user(request, 'Computation failed', level=messages.ERROR)
         return HttpResponseRedirect("../")
-
 
     reindex.short_description = 'Reindex articles'
     reparse.short_description = 'Reparse articles'

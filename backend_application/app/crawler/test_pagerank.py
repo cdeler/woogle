@@ -14,8 +14,8 @@ class TestPagerank(unittest.TestCase):
                          [(0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
 
 
-    def test_get_probabilyties(self):
-        self.assertEqual(pagerank.get_probabilyties(3,np.array([(0,0,1),(1,1,0),(1,0,0)])).tolist(),
+    def test_get_probabilities(self):
+        self.assertEqual(pagerank.get_probabilities(3,np.array([(0,0,1),(1,1,0),(1,0,0)])).tolist(),
                              [[0.0, 0.0, 1.0], [0.5, 1.0, 0.0], [0.5, 0.0, 0.0]])
 
 
@@ -27,10 +27,7 @@ class TestPagerank(unittest.TestCase):
         self.assertAlmostEqual(pagerank.pageRank(
             np.array([(0, 0, 0), (0, 0, 0), (0, 0, 1)])).tolist()[2], 0.0, 1)
 
-    def test_convert_to_array(self):
-        x = np.zeros(2, dtype={'names': ['a', 'v'], 'formats': ['f4', 'f4']})
-        self.assertEqual(pagerank.convert_to_array(
-            x).tolist(), [[0., 0.], [0., 0.]])
+
 
 
 if __name__ == '__main__':
