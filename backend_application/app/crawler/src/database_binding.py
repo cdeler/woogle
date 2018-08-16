@@ -8,8 +8,8 @@ except Exception:
     pass
 import requests
 
-from models import Article, CrawlerStats, base
-import WikiResponseProcessor
+from src.models import Article, CrawlerStats, base
+from src import WikiResponseProcessor as WikiResponseProcessor
 
 
 def init_db():

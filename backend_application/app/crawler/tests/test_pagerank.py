@@ -1,16 +1,19 @@
+import sys
+sys.path.append(sys.path[0] + "/..")
+
 import unittest
 import numpy as np
 from unittest.mock import patch
 
-import pagerank
+from src import pagerank
 
 
 class TestPagerank(unittest.TestCase):
 
     def test_create_graph_positive(self):
-        with patch('pagerank.init_db'), patch('pagerank.get_urls') as mocked_urls:
+        with patch('src.pagerank.init_db'), patch('src.pagerank.get_urls') as mocked_urls:
             mocked_urls.return_value = ['Andrei', 'Nikita', 'Sergei']
-            with patch('pagerank.get_links_url') as scammed_urls:
+            with patch('src.pagerank.get_links_url') as scammed_urls:
                 scammed_urls.return_value = ['Nikita', 'Nikita']
                 ses = pagerank.init_db()
                 self.assertEqual(
@@ -18,7 +21,7 @@ class TestPagerank(unittest.TestCase):
                         (0.0, 0.0, 0.0), (1.0, 1.0, 1.0), (0.0, 0.0, 0.0)])
 
     def test_get_probabilyties(self):
-        with patch('pagerank.init_db'), patch('pagerank.get_rows') as scammed_rows:
+        with patch('src.pagerank.init_db'), patch('src.pagerank.get_rows') as scammed_rows:
             scammed_rows.return_value = 3
             ses = pagerank.init_db()
 

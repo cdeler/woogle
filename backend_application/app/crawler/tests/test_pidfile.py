@@ -1,6 +1,9 @@
+import sys
+sys.path.append(sys.path[0] + "/..")
+
 import unittest
-from PidFile import PidFile
-from PidFile import CrawlerException
+from src.PidFile import PidFile
+from src.PidFile import CrawlerException
 import os
 from random import randint
 

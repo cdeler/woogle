@@ -1,6 +1,6 @@
 import itertools
 import numpy as np
-from database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
+from src.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
 
 SQUERE_ERROR = 1e-6
 
