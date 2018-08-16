@@ -45,28 +45,22 @@ def create_graph(session):
     :return: Graph with dependices.
     """
     urls = get_urls(session)
-    matrix = np.zeros((len(urls),), dtype={'names': urls, 'formats': list(itertools.repeat('f4', len(urls)))})
+    matrix = np.zeros((len(urls),len(urls)))
     for i in urls:
         links = set(get_links_url(session, i))
         dependings = links & set(urls)
         if not dependings :
-            for j in range(len(matrix[i])):
-                matrix[i][j] = 1
+            for j in range(len(matrix[urls.index(i)])):
+                matrix[urls.index(i)] = 1
         while dependings:
             item = dependings.pop()
-            matrix[i][urls.index(item)] = 1
-    return matrix
+            matrix[urls.index(i)][urls.index(item)] = 1
+    print(matrix)
+    return matrix.transpose()
+
+print(create_graph(init_db()))
 
 
-def convert_to_array(arr):
-    """
-    Function that convert list of tuple array into list of lists array.
-
-    :param arr: array that needs to be converted.
-    :type arr: np.array
-    :return: np.array - new
-    """
-    return np.asarray([list(i) for i in arr.tolist()])
 
 def get_probabilyties(rows, matrix):
     """
@@ -112,18 +106,20 @@ def compute_pagerank():
 
     :returns bool - true if computed successfully, false if computation failed.
     """
+    session = init_db()
     success = True
     try:
-        session = init_db()
         rate = dict(zip(get_urls(session),
                         pageRank(
                             get_probabilyties(get_rows(session),
-                            convert_to_array(create_graph(session)))
+                            create_graph(session))
                         )))
         for i, j in rate.items():
             update_page_rank(session, i, j)
     except Exception:
         success = False
+    finally:
+        session.commit()
     return success
 
 

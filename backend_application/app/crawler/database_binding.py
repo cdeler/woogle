@@ -73,8 +73,8 @@ def delete(session, id=None, title=None, url=None):
         session.query(Article.url).filter(Article.url == url).delete()
     else:
         session.query(Article).delete()
+        session.execute("ALTER SEQUENCE wikisearch_article_id_seq RESTART WITH 1;")
     session.commit()
-
 
 def get_rows(session):
     """
@@ -130,5 +130,5 @@ def update_page_rank(session, url, pagerank):
     url = session.query(Article.page_rank).filter(Article.url == url).update({
         'page_rank': pagerank
     })
-    session.commit()
+
 
