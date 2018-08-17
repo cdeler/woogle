@@ -1,3 +1,6 @@
+import sys
+sys.path.append(sys.path[0] + "/..")
+
 import unittest
 import numpy as np
 from unittest.mock import create_autospec
