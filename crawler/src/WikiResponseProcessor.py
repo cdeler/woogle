@@ -33,7 +33,7 @@ class WikiResponseProcessor(ABC):
                 raise ValueError(
                     f"Invalid mode output - {args['output']}. Correct value of argument 'output' - stdout, db, directory ")
         else:
-            return FileWikiResponseProcessor()
+            return DBWikiResponseProcessor()
 
 
 class FileWikiResponseProcessor(WikiResponseProcessor):

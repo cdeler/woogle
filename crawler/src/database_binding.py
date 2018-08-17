@@ -73,31 +73,28 @@ def delete(session, id=None, title=None, url=None):
         session.query(Article.url).filter(Article.url == url).delete()
     else:
         session.query(Article).delete()
+        session.execute("ALTER SEQUENCE wikisearch_article_id_seq RESTART WITH 1;")
     session.commit()
 
 
-def get_rows(ses):
+def get_rows(session):
     """
     Function to get amount of rows in a table.
-
     :param session: session establishes all conversations with the database and represents a “holding zone”.
     :type session: sqlalchemy.session
     :returns: integer amount of rows in table
     """
-    return ses.query(Article).count()
-
+    return session.query(Article).count()
 
 def get_urls(session):
     """
     Function to get all urls of article in a table.
-
     :param session: session establishes all conversations with the database and represents a “holding zone”.
     :type session: sqlalchemy.session
     :returns: integer amount of rows in table
     """
     url = session.query(Article.url)
-    res = [u[0] for u in url]
-    return res
+    return [u[0] for u in url]
 
 
 def get_links_url(session, url):

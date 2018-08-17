@@ -1,6 +1,8 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy import signals
+from twisted.internet import reactor
+from scrapy.crawler import CrawlerRunner
 import datetime
 import logging
 
@@ -246,3 +248,13 @@ class WikiSpider(scrapy.Spider):
 
     def closed(self, reason):
         self.add_finish_info_db(reason)
+
+def execute_spider():
+    """
+    Function to execute crawler from outside.
+    :return: None
+    """
+    runner = CrawlerRunner()
+    instan = runner.crawl(WikiSpider)
+    instan.addBoth(lambda _: reactor.stop())
+    reactor.run()
