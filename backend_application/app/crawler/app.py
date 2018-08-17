@@ -1,12 +1,11 @@
 import argparse
 import functools
 import logging
-#from subprocess import call
 
-import crawler.setting_language as setting
-from crawler.WikiSpider import process
-from crawler.WikiSpider import WikiSpider
-from PidFile import PidFile
+from src import setting_language as setting
+from src.WikiSpider import process
+from src.WikiSpider import WikiSpider
+from src.PidFile import PidFile
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
