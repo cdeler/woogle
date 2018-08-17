@@ -3,7 +3,7 @@ import functools
 from subprocess import call
 import os
 
-import crawler.setting_language as setting
+import crawler.src.setting_language as setting
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']

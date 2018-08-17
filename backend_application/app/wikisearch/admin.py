@@ -2,9 +2,9 @@ from django.contrib import admin
 import requests
 # Register your models here.
 
-from crawler.database_binding import init_db, reparse_by_id
-from crawler.pagerank import compute_pagerank
-from crawler.WikiSpider import execute_spider
+from crawler.src.database_binding import init_db, reparse_by_id
+from crawler.src.pagerank import compute_pagerank
+from crawler.src.WikiSpider import execute_spider
 from django.urls import path
 from django.http import HttpResponseRedirect
 from django.contrib import messages

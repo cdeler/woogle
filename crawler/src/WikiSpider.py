@@ -1,7 +1,6 @@
 import scrapy
 
-from crawler import WikiResponseProcessor
-from crawler import setting_language as setting
+from crawler.src import setting_language as setting, WikiResponseProcessor
 from scrapy.crawler import CrawlerRunner
 from twisted.internet import reactor
 

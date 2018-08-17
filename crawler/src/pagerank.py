@@ -2,9 +2,8 @@
 Module to compute pagerank from database.
 Algorithm based on 'https://en.wikipedia.org/wiki/PageRank'
 """
-import itertools
 import numpy as np
-from crawler.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
+from crawler.src.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
 import time
 from functools import wraps
 

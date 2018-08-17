@@ -1,4 +1,4 @@
-from crawler.models import Article, base
+from crawler.src.models import Article, base
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,8 +8,7 @@ except Exception:
     pass
 import requests
 
-from crawler import WikiResponseProcessor
-
+from crawler.src import WikiResponseProcessor
 
 
 def init_db():
