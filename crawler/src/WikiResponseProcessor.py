@@ -116,8 +116,13 @@ class DBResponseProcessor(WikiResponseProcessor):
         :param id_to_update: id of record that needs to be updated
         :return: None
         """
+
+        session = database_binding.init_db()
         title = response.xpath('//title/text()').extract_first()
         url = response.url
+        if database_binding.read(session=session, url=url):
+            return 0
+
         base = url[:24]
         content = ''
         try:
@@ -137,7 +142,7 @@ class DBResponseProcessor(WikiResponseProcessor):
             if p.nextSibling.name != 'p':
                 break
 
-        session = database_binding.init_db()
+        #session = database_binding.init_db()
 
         if id_to_update:
             database_binding.update(
