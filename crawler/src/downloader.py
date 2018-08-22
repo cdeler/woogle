@@ -8,7 +8,6 @@ def start_download(args):
     url = str
     session = db_bind.init_db()
     while True:
-        time.sleep(0.2)
         try:
             id, url = db_bind.get_wait_url(session)
             # need to parse url and write parser-information into db
@@ -17,6 +16,5 @@ def start_download(args):
             # second way: create response-object(his type must be equal type of response in func process) (not working)
 
             db_bind.reparse_by_id(session, id, url)
-            print(id)
         except IOError as e:
             print("error", e)
