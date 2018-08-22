@@ -3,8 +3,10 @@ from abc import ABC, abstractmethod
 import os
 import errno
 import re
+import scrapy
 
-import database_binding
+from src import database_binding as database_binding
+
 
 NOT_USED_CHARACTERS_IN_DIRECTORY_MODE = [
     '/', '\\', ':', '*', '?', '"', '<', '>', '|']
@@ -119,14 +121,31 @@ class DBResponseProcessor(WikiResponseProcessor):
         title = response.xpath('//title/text()').extract_first()
         url = response.url
         base = url[:24]
-        content = ''
+        content = ' '
+        links = " "
+        state = "waiting"
+
+        session = database_binding.init_db()
+
+        if id_to_update:
+            database_binding.update(session, id_to_update, title=title, url=url, text=content, links=links, state=state)
+        else:
+            database_binding.insert(session, title=title, url=url, text=content, links=links)
+
+    def process_download(self, response, id_to_update=True):
+        title = response.xpath('//title/text()').extract_first()
+        url = response.url
+        base = url[:24]
+        content = ' '
+        state = "complete"
         try:
-            text = response.xpath(
-                '//div[@class="mw-parser-output"]').extract()[0]
-        except IndexError:
+            text = response.xpath('//div[@class="mw-parser-output"]').extract()[0]
+        except IOError:
+            print("error")
             return 0
 
         soup = BeautifulSoup(text, 'lxml')
+
         paragraph = soup.select('div.mw-parser-output > p')
         links = ''
         for p in paragraph:
@@ -139,14 +158,4 @@ class DBResponseProcessor(WikiResponseProcessor):
 
         session = database_binding.init_db()
 
-        if id_to_update:
-            database_binding.update(
-                session,
-                id_to_update,
-                title=title,
-                url=url,
-                text=content,
-                links=links)
-        else:
-            database_binding.insert(
-                session, title=title, url=url, text=content, links=links)
+        database_binding.update(session, id_to_update, title=title, url=url, text=content, links=links, state=state)
