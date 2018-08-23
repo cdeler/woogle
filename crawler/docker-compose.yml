@@ -1,0 +1,10 @@
+version: '3'
+services:
+  downloading:
+    build: .
+    command: ["python","app.py",'-o','db','--loglevel','INFO']
+
+
+
+
+
