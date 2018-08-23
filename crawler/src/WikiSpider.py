@@ -163,23 +163,29 @@ class WikiSpider(scrapy.Spider):
             setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
         self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
 
-        # get shutdown_crawler
-        shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
-            self.language, STATE_CRAWLER['Shutdown'])
+        if self.args and 'output' in self.args and self.args['output'] == 'db':
+            # get shutdown_crawler
+            shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
+                self.language, STATE_CRAWLER['Shutdown'])
 
-        # if shutdown crawler is exist
-        if shutdown_crawler:
-            logging.info(
-                f"Selected shutdown crawler with id: {shutdown_crawler.instance.id}")
-            self.start_urls = [shutdown_crawler.instance.current_page]
-            self.stats.set_value(
-                'pages_crawled',
-                shutdown_crawler.instance.pages_crawled)
+            # if shutdown crawler is exist
+            if shutdown_crawler:
+                logging.info(
+                    f"Selected shutdown crawler with id: {shutdown_crawler.instance.id}")
+                self.start_urls = [shutdown_crawler.instance.current_page]
+                self.stats.set_value(
+                    'pages_crawled',
+                    shutdown_crawler.instance.pages_crawled)
 
-            shutdown_crawler.update(
-                state='Delegated',
-                state_id=STATE_CRAWLER['Delegated'])
+                shutdown_crawler.update(
+                    state='Delegated',
+                    state_id=STATE_CRAWLER['Delegated'])
 
+            else:
+                logging.info("Init new crawler")
+                self.start_urls = [
+                    setting.LANGUAGE_SETTING[self.language]['start_urls']]
+                self.stats.set_value('pages_crawled', 0)
         else:
             logging.info("Init new crawler")
             self.start_urls = [
