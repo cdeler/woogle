@@ -2,9 +2,15 @@ version: '3'
 services:
   downloading:
     build: .
-    command: ["python","app.py",'-o','db','--loglevel','INFO']
+    command: ["python","app.py",'-o','db','--loglevel','INFO','--concurrency','4','--host','0.0.0.0']
+    networks:
+      network:
+        aliases:
+          - downloading.network_elastic_backend
 
-
-
+networks:
+  network:
+    external:
+      name: network_elastic_backend
 
 

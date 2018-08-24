@@ -3,8 +3,10 @@ from abc import ABC, abstractmethod
 import os
 import errno
 import re
+import scrapy
 
-from src import database_binding as database_binding
+from src import database_binding
+
 
 NOT_USED_CHARACTERS_IN_DIRECTORY_MODE = [
     '/', '\\', ':', '*', '?', '"', '<', '>', '|']
@@ -131,20 +133,36 @@ class DBResponseProcessor(WikiResponseProcessor):
         :param id_to_update: id of record that needs to be updated
         :return: None
         """
-
         title = response.xpath('//title/text()').extract_first()
         last_time_updated = response.xpath('//li[@id="footer-info-lastmod"]/text()').extract_first()
 
         if not database_binding.article_is_changed(session, title, last_time_updated) and not id_to_update:
             return 0
-
         url = response.url
         base = url[:24]
-        content = ''
+        content = ' '
+        links = " "
+        state = "waiting"
+
+        # session = database_binding.init_db()
+
+        if id_to_update:
+            database_binding.update(session, id_to_update, title=title, url=url, text=content, links=links, state=state)
+        else:
+            database_binding.insert(session, title=title, url=url, text=content, links=links)
+
+
+
+    def process_download(self, response, id_to_update=True):
+        title = response.xpath('//title/text()').extract_first()
+        url = response.url
+        base = url[:24]
+        content = ' '
+        state = "complete"
         try:
-            text = response.xpath(
-                '//div[@class="mw-parser-output"]').extract()[0]
-        except IndexError:
+            text = response.xpath('//div[@class="mw-parser-output"]').extract()[0]
+        except Exception:
+            print("error")
             return 0
 
         soup = BeautifulSoup(text, 'lxml')
@@ -162,11 +180,10 @@ class DBResponseProcessor(WikiResponseProcessor):
                 paragraph = paragraph.next_sibling
             else:
                 break
-        article_info = {'title': title, 'url': url, 'text': content}
+        article_info = {'title': title, 'url': url, 'text': content, 'state':state}
         meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
-        if id_to_update:
-            database_binding.update(session, id_to_update, article_info, meta_info)
-        else:
-            database_binding.insert(session, article_info, meta_info)
+        session = database_binding.init_db()
+
+        database_binding.update(session, id_to_update, article_info, meta_info)
 
         print('-')

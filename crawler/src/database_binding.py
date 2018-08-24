@@ -30,24 +30,27 @@ def read(session, id=None, title=None, url=None):
             Article.id,
             Article.title,
             Article.url,
-            Article.text).filter(
+            Article.text,
+            Article.state).filter(
             Article.id == id).first()
     elif title:
         return session.query(
             Article.id,
             Article.title,
             Article.url,
-            Article.text).filter(
+            Article.text,
+            Article.state).filter(
             Article.title == title).first()
     elif url:
         return session.query(
             Article.id,
             Article.title,
             Article.url,
-            Article.text).filter(
+            Article.text,
+            Article.state).filter(
             Article.url == url).first()
     else:
-        articles = session.query(Article.id, Article.title, Article.url, Article.text)
+        articles = session.query(Article.id, Article.title, Article.url, Article.text, Article.state)
         return articles
 
 
@@ -74,12 +77,11 @@ def update(session, id, article_info, meta_info):
     session.commit()
 
 
-def reparse_by_id(session, id):
-    url = session.query(Article.url).filter(Article.id == id).first()[0]
+def reparse_by_id(session, id, url):
+    update_state_by_id(session=session, id=id, state="complete")
     response = requests.get(url)
     response = HtmlResponse(url=url, body=response.content)
-    WikiResponseProcessor.DBResponseProcessor().process(response, id_to_update=id)
-
+    WikiResponseProcessor.DBResponseProcessor().process_download(response, id_to_update=id)
 
 def delete(session, id=None, title=None, url=None):
     if id:
@@ -113,6 +115,7 @@ def article_is_changed(session, title, last_time_updated):
     else:
         return 1
 
+
 def get_rows(ses):
     """
     Function to get amount of rows in a table.
@@ -122,6 +125,7 @@ def get_rows(ses):
     :returns: integer amount of rows in table
     """
     return ses.query(Article).count()
+
 
 def get_urls(session):
     """

@@ -73,7 +73,7 @@ def choose_language(arg):
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
-    def __init__(self, stats, arg=None):
+    def __init__(self, stats=None, arg=None):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
             num_threads: count threads
@@ -194,6 +194,7 @@ class WikiSpider(scrapy.Spider):
             self.stats.set_value('pages_crawled', 0)
 
         self.stats.set_value('current_page', self.start_urls[0])
+
 
     def add_start_info_db(self):
         """

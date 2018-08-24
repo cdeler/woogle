@@ -1,12 +1,10 @@
-
-
 import os
 import logging
 import sys
 
 
 def PidFile(path=os.path.curdir, name='pidfile'):
-    if sys.platform == 'linux':
+    if sys.platform == 'linux' or sys.platform == 'darwin':
         return PidFileLinux(path=path, name=name)
     elif sys.platform.find('win') != -1:
         return PidFileWin(path=path, name=name)

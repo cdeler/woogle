@@ -2,10 +2,18 @@ import argparse
 import functools
 import logging
 
-from src import setting_language as setting
+
+
 from src.WikiSpider import get_process
+import concurrent.futures
+import multiprocessing
+
+from src import setting_language as setting
+
 from src.WikiSpider import WikiSpider
 from src.PidFile import PidFile
+from src import downloader
+from src import database_binding
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
@@ -28,6 +36,27 @@ def args2dict(args):
         else:
             arg_dict[key] = value
     return arg_dict
+
+
+def multiprocess(count_workers: int, args):
+    futures = set()
+    with concurrent.futures.ProcessPoolExecutor(max_workers=count_workers) as executor:
+        future = executor.submit(fn=wiki_spider, args=args)
+        futures.add(future)
+        for i in range(count_workers-1):
+            future_d = executor.submit(fn=downloader.start_download)
+            # future_d.add_done_callback(finished_downloader)
+
+            futures.add(future_d)
+        executor.shutdown(wait=False)
+
+
+
+def wiki_spider(args):
+    with PidFile():
+        logging.info("Start crawler")
+        process.crawl(WikiSpider, arg=args)
+        process.start()
 
 
 if __name__ == "__main__":
@@ -80,6 +109,10 @@ if __name__ == "__main__":
         metavar="FILE",
         help="pausing and resuming crawler",
         default=None)
+    parser.add_argument("-c", "--concurrency", type=int, default=multiprocessing.cpu_count(),
+                        help="specify the concurrency (for debugging and timing) [default: %(default)d]")
+    parser.add_argument("--host", type=str, default="0.0.0.0", help="database host")
+
 
     arg = vars(parser.parse_args())
     if arg['silent'] and arg['output'] != 'stdout':
@@ -96,8 +129,7 @@ if __name__ == "__main__":
 
     # call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
     #      "-a", f'arg={arguments_for_crawler}'])
-    with PidFile(name=arg['pidfile']):
-        logging.info("Start crawler.")
-        process = get_process(arg['logfile'], arg['loglevel'], arg['jobdir'])
-        process.crawl(WikiSpider, arg=arguments_for_crawler)
-        process.start()  # the script will block here until the crawling is finished
+
+    database_binding.DB_STRING.replace("localhost", arg["host"])
+
+    multiprocess(count_workers=arg["concurrency"], args=arguments_for_crawler)

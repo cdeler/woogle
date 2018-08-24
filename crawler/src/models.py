@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 base = declarative_base()
@@ -10,6 +10,7 @@ class Article(base):
     title = Column(TEXT)
     url = Column(TEXT)
     text = Column(TEXT)
+    state = Column(VARCHAR(20), default="waiting")
 
 
 class Meta(base):
@@ -25,7 +26,7 @@ class CrawlerStats(base):
     start_time = Column(TIMESTAMP)
     language = Column(VARCHAR(2))
     pages_crawled = Column(INTEGER)
-    current_page = Column(VARCHAR(255))
+    current_page = Column(TEXT)
     state_id = Column(INTEGER)
     state = Column(VARCHAR(50))  # working, finish
     finish_time = Column(TIMESTAMP, nullable=True)
