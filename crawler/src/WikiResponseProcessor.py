@@ -140,7 +140,7 @@ class DBResponseProcessor(WikiResponseProcessor):
         state = "complete"
         try:
             text = response.xpath('//div[@class="mw-parser-output"]').extract()[0]
-        except IOError:
+        except Exception:
             print("error")
             return 0
 

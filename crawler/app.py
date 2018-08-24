@@ -9,6 +9,7 @@ from src.WikiSpider import process
 from src.WikiSpider import WikiSpider
 from src.PidFile import PidFile
 from src import downloader
+from src import database_binding
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
@@ -38,8 +39,12 @@ def multiprocess(count_workers: int, args):
         future = executor.submit(fn=wiki_spider, args=args)
         futures.add(future)
         for i in range(count_workers-1):
-            future_d = executor.submit(fn=downloader.start_download, args=args)
+            future_d = executor.submit(fn=downloader.start_download)
+            # future_d.add_done_callback(finished_downloader)
+
             futures.add(future_d)
+        executor.shutdown(wait=False)
+
 
 
 def wiki_spider(args):
@@ -65,6 +70,7 @@ if __name__ == "__main__":
                         default=CHOICE_OUTPUT[0])
     parser.add_argument("-c", "--concurrency", type=int, default=multiprocessing.cpu_count(),
                         help="specify the concurrency (for debugging and timing) [default: %(default)d]")
+    parser.add_argument("--host", type=str, default="0.0.0.0", help="database host")
     arg_s = parser.add_argument('-s', '--silent', help='turn on silent mode, use with output=stdout (default: False)',
                                 action='store_true')
 
@@ -72,6 +78,8 @@ if __name__ == "__main__":
     if arg['silent'] and arg['output'] != 'stdout':
         msg = "isn't used with argument -o|--output equal 'stdout'"
         raise argparse.ArgumentError(arg_s, msg)
+
+    database_binding.DB_STRING.replace("localhost", arg["host"])
 
     arguments_for_crawler = functools.reduce(lambda x, y: x + y, [f"{key}={value} " for key, value in arg.items()], "")
     logging.info(f"Crawler starts with options: {arguments_for_crawler}")

@@ -11,10 +11,11 @@ import requests
 from src.models import Article, CrawlerStats, base
 from src import WikiResponseProcessor as WikiResponseProcessor
 
+DB_STRING = "postgres://postgres:password@localhost/crawler_bd"
+
 
 def init_db():
-    db_string = "postgres://postgres:password@localhost/crawler_bd"
-    db = create_engine(db_string)
+    db = create_engine(DB_STRING)
 
     Session = sessionmaker(db)
     session = Session()
