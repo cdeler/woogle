@@ -20,7 +20,7 @@ CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
 CHOICE_OUTPUT = ['stdout', 'db', 'directory']
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 
-
+arg_dict=0
 def args2dict(args):
     """
     Transform string with arguments into dictionary with them.
@@ -54,21 +54,21 @@ def multiprocess(count_workers: int, args):
 
 def wiki_spider(args):
     with PidFile():
-        logging.info("Start crawler")
+        logging.info("Start crawler.")
+        process = get_process(arg_dict['logfile'], arg_dict['loglevel'], arg_dict['jobdir'])
         process.crawl(WikiSpider, arg=args)
-        process.start()
+        process.start()  # the script will block here until the crawling is finished
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Run wiki-downloader&parser with given options.',
-        epilog='File with spider MUST be in the same directory as this file. \
+    description='Run wiki-downloader&parser with given options.',
+    epilog='File with spider MUST be in the same directory as this file. \
                 The logic of processing arguments is inside called spider. \
                 Arguments just define its behaviour depending on their values.')
 
     # define optional arguments
-    parser.add_argument(
-        '-l',
+    parser.add_argument('-l',
         '--language',
         help=f'wikipedia language (default: {CHOICE_LANGUAGE[0]})',
         type=str,
@@ -113,8 +113,8 @@ if __name__ == "__main__":
                         help="specify the concurrency (for debugging and timing) [default: %(default)d]")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="database host")
 
-
     arg = vars(parser.parse_args())
+    arg_dict=arg
     if arg['silent'] and arg['output'] != 'stdout':
         msg = "isn't used with argument -o|--output equal 'stdout'"
         raise argparse.ArgumentError(arg_s, msg)
@@ -130,6 +130,6 @@ if __name__ == "__main__":
     # call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
     #      "-a", f'arg={arguments_for_crawler}'])
 
-    database_binding.DB_STRING.replace("localhost", arg["host"])
+    # database_binding.DB_STRING.replace("localhost", arg["host"])
 
     multiprocess(count_workers=arg["concurrency"], args=arguments_for_crawler)

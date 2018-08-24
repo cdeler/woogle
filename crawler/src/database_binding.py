@@ -53,6 +53,33 @@ def read(session, id=None, title=None, url=None):
         articles = session.query(Article.id, Article.title, Article.url, Article.text, Article.state)
         return articles
 
+def get_urls_by_state(session, state="waiting"):
+    urls = session.query(Article.url).filter(Article.state == state).first()
+    res = [u[0] for u in urls]
+    return urls[0]
+
+
+def get_id_by_state(session, state="waiting"):
+    ids = session.query(Article.id).filter(Article.state == state)
+    res = [id[0] for id in ids]
+    return res
+
+
+def get_wait_url(session):
+    res = session.query(Article.id, Article.url).with_for_update().filter(Article.state == "waiting").first()
+    if res:
+        id, url = res[0], res[1]
+        update_state_by_id(session, id=id, state="...")
+        return id, url
+    return None
+
+
+def update_state_by_id(session, id, state):
+    session.query(Article).filter(Article.id == id).update(
+        {'state': state}
+    )
+    session.commit()
+
 
 def insert(session, article_info, meta_info):
     try:
