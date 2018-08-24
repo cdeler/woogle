@@ -88,7 +88,7 @@ class Connector:
             result_set = conn.execute(select_statement)
         return result_set
 
-    async def _index(self, row):
+    def _index(self, row):
         """
         Method that send single requests to index service.
 
@@ -101,40 +101,20 @@ class Connector:
             "doc_type": self.elastic_doc_type,
             "id": row[self.primary_key],
             "params": f'{self.get_json_from_row(row)}'}
-
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(url, json=querystring) as resp:
-                    data = await resp.text()
-                    print(data)
-            except aiohttp.client_exceptions.ClientOSError:
-                pass
-
         response = requests.request("POST", url, params=querystring)
         return response.content
 
-    def index(self, id=None):
+    def index(self, threads=20):
         """
         Method that create event_loop for asuc sending.
 
         :param id: id of seperate article.
         :return: None.
         """
-        selection = None
-        features = []
-        if id:
-            with self.engine.connect() as conn:
-                select_statement = self.table.select().where(self.table.c.id == id)
-                selection = conn.execute(select_statement).fetchall()
-        else:
-            selection = self.table_set
-
-        for row in selection:
-            features.append(self._index(row))
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(asyncio.wait(features))
+        pool = ThreadPool(threads)
+        pool.map(self._index, self.table_set)
+        pool.close()
+        pool.join()
 
     def delete_index(self):
         """
