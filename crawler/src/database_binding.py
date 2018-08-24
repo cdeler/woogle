@@ -4,6 +4,7 @@ from src import WikiResponseProcessor as WikiResponseProcessor
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import logging
+
 try:
     from scrapy.http import HtmlResponse
 except Exception:
@@ -11,10 +12,11 @@ except Exception:
 import requests
 import json
 import sqlalchemy.exc
+import os
 
 
 def init_db():
-    with open("src\conf.json") as conf:
+    with open(os.path.join('src', 'conf.json')) as conf:
         db_string = json.load(conf)['db_string']
     db = create_engine(db_string)
 
@@ -52,6 +54,7 @@ def read(session, id=None, title=None, url=None):
     else:
         articles = session.query(Article.id, Article.title, Article.url, Article.text, Article.state)
         return articles
+
 
 def get_urls_by_state(session, state="waiting"):
     urls = session.query(Article.url).filter(Article.state == state).first()
@@ -110,6 +113,7 @@ def reparse_by_id(session, id, url):
     response = HtmlResponse(url=url, body=response.content)
     WikiResponseProcessor.DBResponseProcessor().process_download(response, id_to_update=id)
 
+
 def delete(session, id=None, title=None, url=None):
     if id:
         session.query(Article.id).filter(Article.id == id).delete()
@@ -127,6 +131,7 @@ def delete(session, id=None, title=None, url=None):
         session.query(Meta).delete()
         session.execute("ALTER SEQUENCE wikisearch_article_id_seq RESTART WITH 1;")
     session.commit()
+
 
 def article_is_changed(session, title, last_time_updated):
     id = session.query(Article.id).filter(Article.title == title).first()
@@ -180,6 +185,7 @@ def get_links_url(session, url):
     id = session.query(Article.id).filter(Article.url == url).first()
     url = session.query(Meta.value).filter(Meta.meta_key == 'links', Meta.article_id == id)
     return [u[0].split() for u in url][0]
+
 
 def update_page_rank(session, url, pagerank):
     """
