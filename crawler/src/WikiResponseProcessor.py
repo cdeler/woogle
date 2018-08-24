@@ -9,6 +9,7 @@ from src import database_binding as database_binding
 NOT_USED_CHARACTERS_IN_DIRECTORY_MODE = [
     '/', '\\', ':', '*', '?', '"', '<', '>', '|']
 
+session = database_binding.init_db()
 
 class WikiResponseProcessor(ABC):
 
@@ -33,7 +34,7 @@ class WikiResponseProcessor(ABC):
                 raise ValueError(
                     f"Invalid mode output - {args['output']}. Correct value of argument 'output' - stdout, db, directory ")
         else:
-            return DBWikiResponseProcessor()
+            return FileWikiResponseProcessor()
 
 
 class FileWikiResponseProcessor(WikiResponseProcessor):
@@ -67,11 +68,18 @@ class FileWikiResponseProcessor(WikiResponseProcessor):
                 return 0
 
             soup = BeautifulSoup(text, 'lxml')
-            paragraph = soup.select('div.mw-parser-output > p')
-            for p in paragraph:
-                output.write(p.text)
-                if p.nextSibling.name != 'p':
+            paragraph = soup.select('div.mw-parser-output > p')[0]
+            while paragraph.text.strip() == '':
+                paragraph = paragraph.find_next_sibling('p')
+            while True:
+                output.write(paragraph.text)
+                if paragraph.next_sibling.name == 'p':
+                    paragraph = paragraph.next_sibling
+                else:
                     break
+
+            print('-')
+
 
 
 class StdOutWikiResponseProcessor(WikiResponseProcessor):
@@ -95,10 +103,17 @@ class StdOutWikiResponseProcessor(WikiResponseProcessor):
             return 0
 
         soup = BeautifulSoup(text, 'lxml')
-        paragraph = soup.select('div.mw-parser-output > p')
-        for p in paragraph:
-            output += p.text
-            if len(output) > n or p.nextSibling.name != 'p':
+        paragraph = soup.select('div.mw-parser-output > p')[0]
+
+        while paragraph.text.strip() == '':
+            paragraph = paragraph.find_next_sibling('p')
+        while True:
+            output += paragraph.text
+            if paragraph.next_sibling.name == 'p':
+                paragraph = paragraph.next_sibling
+            else:
+                break
+            if len(output) > n:
                 break
 
         if not silent:
@@ -117,12 +132,13 @@ class DBResponseProcessor(WikiResponseProcessor):
         :return: None
         """
 
-        session = database_binding.init_db()
         title = response.xpath('//title/text()').extract_first()
-        url = response.url
-        if database_binding.read(session=session, url=url):
+        last_time_updated = response.xpath('//li[@id="footer-info-lastmod"]/text()').extract_first()
+
+        if not database_binding.article_is_changed(session, title, last_time_updated) and not id_to_update:
             return 0
 
+        url = response.url
         base = url[:24]
         content = ''
         try:
@@ -132,26 +148,25 @@ class DBResponseProcessor(WikiResponseProcessor):
             return 0
 
         soup = BeautifulSoup(text, 'lxml')
-        paragraph = soup.select('div.mw-parser-output > p')
+        paragraph = soup.select('div.mw-parser-output > p')[0]
         links = ''
-        for p in paragraph:
-            for link in p.findAll('a', attrs={'href': re.compile("^/wiki")}):
+
+        while paragraph.text.strip() == '':
+            paragraph = paragraph.find_next_sibling('p')
+        while True:
+            content += paragraph.text
+            for link in paragraph.findAll('a', attrs={'href': re.compile("^/wiki")}):
                 full_link = base + link.get('href') + ' '
                 links += full_link
-            content += p.text
-            if p.nextSibling.name != 'p':
+            if paragraph.next_sibling.name == 'p':
+                paragraph = paragraph.next_sibling
+            else:
                 break
-
-        #session = database_binding.init_db()
-
+        article_info = {'title': title, 'url': url, 'text': content}
+        meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
         if id_to_update:
-            database_binding.update(
-                session,
-                id_to_update,
-                title=title,
-                url=url,
-                text=content,
-                links=links)
+            database_binding.update(session, id_to_update, article_info, meta_info)
         else:
-            database_binding.insert(
-                session, title=title, url=url, text=content, links=links)
+            database_binding.insert(session, article_info, meta_info)
+
+        print('-')
