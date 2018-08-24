@@ -145,17 +145,20 @@ class DBResponseProcessor(WikiResponseProcessor):
         state = "waiting"
 
         # session = database_binding.init_db()
+        article_info = {'title': title, 'url': url, 'text': content, 'state': state}
+        meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
 
         if id_to_update:
-            database_binding.update(session, id_to_update, title=title, url=url, text=content, links=links, state=state)
+            database_binding.update(session, id_to_update, article_info, meta_info)
         else:
-            database_binding.insert(session, title=title, url=url, text=content, links=links)
+            database_binding.insert(session, article_info, meta_info)
 
 
 
     def process_download(self, response, id_to_update=True):
         title = response.xpath('//title/text()').extract_first()
         url = response.url
+        last_time_updated = response.xpath('//li[@id="footer-info-lastmod"]/text()').extract_first()
         base = url[:24]
         content = ' '
         state = "complete"
