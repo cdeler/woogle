@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, TIMESTAMP, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 
 base = declarative_base()
@@ -7,18 +7,16 @@ base = declarative_base()
 class Article(base):
     __tablename__ = 'wikisearch_article'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    title = Column(VARCHAR(255))
-    url = Column(VARCHAR(255))
+    title = Column(TEXT)
+    url = Column(TEXT)
     text = Column(TEXT)
-    links = Column(TEXT)
-    page_rank = Column(FLOAT, default=0)
 
 
-# class Meta(base):
-#     __tablename__ = 'meta'
-#     article_id = Column(INTEGER, ForeignKey('articles.id'), primary_key=True)
-#     meta_key = Column(VARCHAR(255))
-#     value = Column(VARCHAR(255))
+class Meta(base):
+    __tablename__ = 'meta'
+    article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
+    meta_key = Column(VARCHAR(255), primary_key=True)
+    value = Column(TEXT)
 
 
 class CrawlerStats(base):
