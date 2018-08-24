@@ -14,7 +14,7 @@ import sqlalchemy.exc
 
 
 def init_db():
-    with open("conf.json") as conf:
+    with open("src\conf.json") as conf:
         db_string = json.load(conf)['db_string']
     db = create_engine(db_string)
 

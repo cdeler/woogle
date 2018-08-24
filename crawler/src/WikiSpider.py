@@ -17,6 +17,7 @@ STATE_CRAWLER = {'Working': 1,
 
 process = CrawlerProcess({
         'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'})
+
 def get_process(log_file,log_level,jobdir):
     setting={}
     if log_file:
@@ -64,7 +65,7 @@ def choose_language(arg):
             return arg['language']
         else:
             raise ValueError(
-                f"Value of argument 'language' - {self.args['language']} is invalid. Correct value - {languages}")
+                f"Value of argument 'language' - {arg['language']} is invalid. Correct value - {languages}")
     else:
         return language_default
 
@@ -260,13 +261,3 @@ class WikiSpider(scrapy.Spider):
 
     def closed(self, reason):
         self.add_finish_info_db(reason)
-
-def execute_spider():
-    """
-    Function to execute crawler from outside.
-    :return: None
-    """
-    runner = CrawlerRunner()
-    instan = runner.crawl(WikiSpider)
-    instan.addBoth(lambda _: reactor.stop())
-    reactor.run()
