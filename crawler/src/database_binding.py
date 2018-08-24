@@ -62,9 +62,6 @@ def insert(session, article_info, meta_info):
         session.commit()
     except sqlalchemy.exc.IntegrityError:
         session.rollback()
-        raise
-    finally:
-        session.close()
 
 
 def update(session, id, article_info, meta_info):
