@@ -55,6 +55,7 @@ def insert(session, article_info, meta_info):
     try:
         article = Article(**article_info)
         session.add(article)
+        session.commit()
         session.add(Meta(article_id=article.id, meta_key='links', value=meta_info['links']))
         session.add(Meta(article_id=article.id, meta_key='page_rank', value=meta_info['page_rank']))
         session.add(Meta(article_id=article.id, meta_key='last_time_updated', value=meta_info['last_time_updated']))
