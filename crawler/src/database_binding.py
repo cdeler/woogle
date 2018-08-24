@@ -61,7 +61,10 @@ def insert(session, article_info, meta_info):
         session.add(Meta(article_id=article.id, meta_key='last_time_updated', value=meta_info['last_time_updated']))
         session.commit()
     except sqlalchemy.exc.IntegrityError:
-        pass
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def update(session, id, article_info, meta_info):
