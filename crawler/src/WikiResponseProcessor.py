@@ -189,4 +189,4 @@ class DBResponseProcessor(WikiResponseProcessor):
 
         database_binding.update(session, id_to_update, article_info, meta_info)
 
-        print('-')
+        #print('-')

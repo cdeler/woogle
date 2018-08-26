@@ -101,13 +101,12 @@ class WikiSpider(scrapy.Spider):
         self.stats = stats
         # init languge params (next page, start page, etc.)
         self.init_params()
-        # init crawler in database
-        self.add_start_info_db()
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = cls(crawler.stats, *args, **kwargs)
         crawler.signals.connect(spider.closed, signal=signals.spider_closed)
+        crawler.signals.connect(spider.opened,signal=signals.spider_opened)
         return spider
 
     def parse(self, response):
@@ -260,6 +259,10 @@ class WikiSpider(scrapy.Spider):
                     state='Finished',
                     finish_time=datetime.datetime.now(),
                     finish_reason=reason)
+    def opened(self):
+        logging.info("Spider opened")
+        self.add_start_info_db()
 
     def closed(self, reason):
+        logging.info("Spider Closed")
         self.add_finish_info_db(reason)
