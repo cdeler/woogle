@@ -37,7 +37,7 @@ def wiki_spider(args):
     with PidFile(name=args['pidfile']):
         logging.info(f"Crawler starts with options: {arguments_for_crawler}")
         process = get_process(args['logfile'],args['loglevel'],args['jobdir'])
-        process.crawl(WikiSpider, arg=arguments_for_crawler)
+        process.crawl(WikiSpider, args['language'],args['output'],args['silent'])
         process.start()  # the script will block here until the crawling is finished
 
 

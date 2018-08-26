@@ -20,23 +20,18 @@ class WikiResponseProcessor(ABC):
         pass
 
     @staticmethod
-    def getWikiResponseProcessor(args=None):
+    def getWikiResponseProcessor(output):
 
-        if args is not None and 'output' in args:
-            mode_output = args['output']
-
-            if mode_output == 'stdout':
-                return StdOutWikiResponseProcessor()
-            elif mode_output == 'directory':
-                return FileWikiResponseProcessor()
-            elif mode_output == 'db':
-                return DBResponseProcessor()
-
-            else:
-                raise ValueError(
-                    f"Invalid mode output - {args['output']}. Correct value of argument 'output' - stdout, db, directory ")
-        else:
+        if output == 'stdout':
+            return StdOutWikiResponseProcessor()
+        elif output == 'directory':
             return FileWikiResponseProcessor()
+        elif output == 'db':
+            return DBResponseProcessor()
+        else:
+            raise ValueError(
+                f"Invalid mode output - {output}. Correct value of argument 'output' - stdout, db, directory ")
+
 
 
 class FileWikiResponseProcessor(WikiResponseProcessor):

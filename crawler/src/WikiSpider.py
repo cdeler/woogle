@@ -30,30 +30,6 @@ def get_process(log_file,log_level,jobdir):
     process.settings.update(setting)
     return process
 
-def arg_str2dict(arg):
-    """
-    Converting argument from "arg1=va1 arg2=val2 ..." to dict {arg1:va1, arg2:val2, ...}
-    :param args: str
-    :return: dict
-    """
-    try:
-        arg_dict = {i.split('=')[0]: i.split('=')[1] for i in arg.split()}
-    except Exception as e:
-        raise TypeError(
-            "Invalid format argument:\n f{arg} \n Correct format: 'arg1=va1 arg2=val2 ...' ") from e
-
-    if 'silent' in arg_dict:
-        if arg_dict['silent'] == "False":
-            arg_dict['silent'] = False
-        elif arg_dict['silent'] == "True":
-            arg_dict['silent'] = True
-        else:
-            raise ValueError(
-                f"Invalid mode silent - {arg_dict['silent']}. Correct value of argument 'silent' - True, False ")
-
-    return arg_dict
-
-
 def choose_language(arg):
     # setup language setting
     languages = list(setting.LANGUAGE_SETTING.keys())
@@ -74,7 +50,7 @@ def choose_language(arg):
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
-    def __init__(self, stats=None, arg=None):
+    def __init__(self, stats=None,language='ru',output='db',silent=False):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
             num_threads: count threads
@@ -90,13 +66,14 @@ class WikiSpider(scrapy.Spider):
         :type arg: str
         """
         super(WikiSpider, self).__init__()
-        if arg is not None:
-            self.args = arg_str2dict(arg)
-        else:
-            self.args = arg
-
+        #if arg is not None:
+        #    self.args = arg_str2dict(arg)
+        #else:
+        #    self.args = arg
+        self.output=output
+        self.silent=silent
         # init language
-        self.language = choose_language(self.args)
+        self.language = choose_language(language)
         # stats
         self.stats = stats
         # init languge params (next page, start page, etc.)
@@ -151,13 +128,10 @@ class WikiSpider(scrapy.Spider):
         """
 
         self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
-            self.args)
+            self.output)
 
-        if self.args and 'output' in self.args:
-            if self.args['output'] == 'stdout' and 'silent' in self.args:
-                self.processor.process(response, silent=self.args['silent'])
-            else:
-                self.processor.process(response)
+        if self.output == 'stdout':
+            self.processor.process(response, silent=self.silent)
         else:
             self.processor.process(response)
 
@@ -170,7 +144,7 @@ class WikiSpider(scrapy.Spider):
             setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
         self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
 
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             # get shutdown_crawler
             shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
                 self.language, STATE_CRAWLER['Shutdown'])
@@ -214,7 +188,7 @@ class WikiSpider(scrapy.Spider):
         :return: None
         """
         # write in database
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             self.db_actions = database_binding.CrawlerStatsActions()
             self.db_actions.create(
                 start_time=str(datetime.datetime.now()),
@@ -232,7 +206,7 @@ class WikiSpider(scrapy.Spider):
                current_page: current url page with article
         :return: None
         """
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             self.db_actions.update(
                 pages_crawled=self.stats.get_value('pages_crawled'),
                 current_page=self.stats.get_value('current_page'))
@@ -248,7 +222,7 @@ class WikiSpider(scrapy.Spider):
                 finish_reason: finish reason from stats
          :return: None
          """
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             if self.stats.get_value('current_page'):
                 self.db_actions.update(
                     pages_crawled=self.stats.get_value('pages_crawled'),
