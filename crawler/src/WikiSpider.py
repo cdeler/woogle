@@ -120,7 +120,7 @@ class WikiSpider(scrapy.Spider):
         # database
         self.add_curr_info_db()
 
-        yield from self.parse_wiki_pages(response)
+        yield from self.parse_all_pages(response)
 
         next_page = response.xpath(
             f'//a[contains(text(), "{self.next_page_words}")]/@href').extract_first()
@@ -131,6 +131,18 @@ class WikiSpider(scrapy.Spider):
             # stats
             self.stats.set_value('current_page', None)
 
+    def parse_all_pages(self, response):
+        """ Method that calls parsing processor for wiki articles
+
+        :param response:
+        :return:
+        """
+        pages = response.xpath(
+            '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
+        for page in pages:
+            if page is not None:
+                yield response.follow(page, callback=self.parse_wiki_pages)
+
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
 
@@ -140,8 +152,6 @@ class WikiSpider(scrapy.Spider):
 
         self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
             self.args)
-        # stats
-        self.stats.inc_value('pages_crawled')
 
         if self.args and 'output' in self.args:
             if self.args['output'] == 'stdout' and 'silent' in self.args:
@@ -151,11 +161,7 @@ class WikiSpider(scrapy.Spider):
         else:
             self.processor.process(response)
 
-        pages = response.xpath(
-            '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
-        for page in pages:
-            if page is not None:
-                yield response.follow(page, callback=self.parse_wiki_pages)
+        self.stats.inc_value('pages_crawled')
 
     def init_params(self):
         logging.info('Init language options')
