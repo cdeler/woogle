@@ -15,26 +15,7 @@ CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
 CHOICE_OUTPUT = ['stdout', 'db', 'directory']
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 
-arg_dict=0
-def args2dict(args):
-    """
-    Transform string with arguments into dictionary with them.
-
-    :param args: input string.
-    :return: dictionary with parsed arguments
-    """
-    arg_dict = {}
-    for argument in args:
-        key, value = argument.split('=')
-        if value.startswith('\\'):
-            arg_dict[key] = value[1:]
-        else:
-            arg_dict[key] = value
-    return arg_dict
-
-
 def multiprocess(count_workers: int, args):
-    print('1')
     futures = set()
     with concurrent.futures.ProcessPoolExecutor(max_workers=count_workers) as executor:
         future = executor.submit(fn=wiki_spider, args=args)
@@ -49,14 +30,15 @@ def multiprocess(count_workers: int, args):
 
 
 def wiki_spider(args):
-    print('2')
-    print(arg_dict)
     #with PidFile(name=arg_dict['pidfile']):
-    logging.info("Start crawler.")
-    process = get_process(None,'INFO',None)
-    process.crawl(WikiSpider, arg=args)
-    print(process)
-    process.start()  # the script will block here until the crawling is finished
+    opt_for_crawler=['language','output','silent']
+    arguments_for_crawler = functools.reduce(
+        lambda x, y: x + y, [f"{key}={value} " for key, value in args.items() if key in opt_for_crawler], "")
+    with PidFile(name=args['pidfile']):
+        logging.info(f"Crawler starts with options: {arguments_for_crawler}")
+        process = get_process(args['logfile'],args['loglevel'],args['jobdir'])
+        process.crawl(WikiSpider, arg=arguments_for_crawler)
+        process.start()  # the script will block here until the crawling is finished
 
 
 if __name__ == "__main__":
@@ -118,17 +100,10 @@ if __name__ == "__main__":
         msg = "isn't used with argument -o|--output equal 'stdout'"
         raise argparse.ArgumentError(arg_s, msg)
 
-    opt_for_crawler=['language','output','silent']
-    arguments_for_crawler = functools.reduce(
-        lambda x, y: x + y, [f"{key}={value} " for key, value in arg.items() if key in opt_for_crawler], "")
-    logging.info(f"Crawler starts with options: {arguments_for_crawler}")
     # call crawler with given parameters
     # command for running looks like: scrapy runspider spider.py -a [arg1=val1
     # arg2=val2 ...]
 
-    # call(["scrapy", "runspider", os.path.join("crawler", "WikiSpider.py"),
-    #      "-a", f'arg={arguments_for_crawler}'])
-
     # database_binding.DB_STRING.replace("localhost", arg["host"])
 
-    multiprocess(count_workers=arg["concurrency"], args=arguments_for_crawler)
+    multiprocess(count_workers=arg["concurrency"], args=arg)

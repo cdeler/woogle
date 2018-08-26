@@ -16,7 +16,8 @@ STATE_CRAWLER = {'Working': 1,
                  'Delegated': 4}
 
 process = CrawlerProcess({
-        'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'})
+        'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
+        'LOG_LEVEL':'INFO'})
 
 def get_process(log_file,log_level,jobdir):
     setting={}
