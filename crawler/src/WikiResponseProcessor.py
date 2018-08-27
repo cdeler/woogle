@@ -183,10 +183,9 @@ class DBResponseProcessor(WikiResponseProcessor):
                 paragraph = paragraph.next_sibling
             else:
                 break
-        article_info = {'title': title, 'url': url, 'text': content, 'state':state}
-        meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
+        article_info = {'title': title, 'url': url, 'text': content, 'state':state,'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
         session = database_binding.init_db()
 
-        database_binding.update(session, id_to_update, article_info, meta_info)
+        database_binding.update(session, id_to_update, article_info)
 
         print('-')

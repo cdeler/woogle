@@ -11,13 +11,9 @@ class Article(base):
     url = Column(TEXT)
     text = Column(TEXT)
     state = Column(VARCHAR(20), default="waiting")
-
-
-class Meta(base):
-    __tablename__ = 'meta'
-    article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
-    meta_key = Column(VARCHAR(255), primary_key=True)
-    value = Column(TEXT)
+    links = Column(TEXT)
+    page_rank = Column(INTEGER, default=0)
+    last_time_updated = Column(VARCHAR(1024))
 
 
 class CrawlerStats(base):

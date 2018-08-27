@@ -1,4 +1,4 @@
-from src.models import Article, Meta, CrawlerStats, base
+from src.models import Article, CrawlerStats, base
 from src import WikiResponseProcessor as WikiResponseProcessor
 
 from sqlalchemy import create_engine
@@ -84,26 +84,17 @@ def update_state_by_id(session, id, state):
     session.commit()
 
 
-def insert(session, article_info, meta_info):
+def insert(session, article_info):
     try:
         article = Article(**article_info)
         session.add(article)
-        session.commit()
-        session.add(Meta(article_id=article.id, meta_key='links', value=meta_info['links']))
-        session.add(Meta(article_id=article.id, meta_key='page_rank', value=meta_info['page_rank']))
-        session.add(Meta(article_id=article.id, meta_key='last_time_updated', value=meta_info['last_time_updated']))
         session.commit()
     except sqlalchemy.exc.IntegrityError:
         session.rollback()
 
 
-def update(session, id, article_info, meta_info):
+def update(session, id, article_info):
     session.query(Article).filter(Article.id == id).update(article_info)
-    session.query(Meta).filter(Meta.article_id == id, Meta.meta_key == 'links').update({'value': meta_info['links']})
-    session.query(Meta).filter(Meta.article_id == id, Meta.meta_key == 'page_rank').update(
-        {'value': meta_info['page_rank']})
-    session.query(Meta).filter(Meta.article_id == id, Meta.meta_key == 'last_time_updated').update(
-        {'value': meta_info['last_time_updated']})
     session.commit()
 
 
@@ -117,26 +108,18 @@ def reparse_by_id(session, id, url):
 def delete(session, id=None, title=None, url=None):
     if id:
         session.query(Article.id).filter(Article.id == id).delete()
-        session.query(Meta.article_id).filter(Meta.article_id == id).delete()
     elif title:
         session.query(Article.title).filter(Article.title == title).delete()
-        id = session.query(Article.id).filter(Article.title == title).first()
-        session.query(Meta.article_id).filter(Meta.article_id == id).delete()
     elif url:
         session.query(Article.url).filter(Article.url == url).delete()
-        id = session.query(Article.id).filter(Article.url == url).first()
-        session.query(Meta.article_id).filter(Meta.article_id == id).delete()
     else:
         session.query(Article).delete()
-        session.query(Meta).delete()
         session.execute("ALTER SEQUENCE wikisearch_article_id_seq RESTART WITH 1;")
     session.commit()
 
 
 def article_is_changed(session, title, last_time_updated):
-    id = session.query(Article.id).filter(Article.title == title).first()
-    last_time_updated_from_db = session.query(Meta.value).filter(Meta.article_id == id,
-                                                                 Meta.meta_key == 'last_time_updated').first()
+    last_time_updated_from_db = session.query(Article.last_time_updated).filter(Article.title == title).first()
 
     # query.first() returns one value in tuple or None
     if last_time_updated_from_db:
@@ -148,7 +131,7 @@ def article_is_changed(session, title, last_time_updated):
         return 1
 
 
-def get_rows(ses):
+def get_rows(session):
     """
     Function to get amount of rows in a table.
 
@@ -156,7 +139,7 @@ def get_rows(ses):
     :type session: sqlalchemy.session
     :returns: integer amount of rows in table
     """
-    return ses.query(Article).count()
+    return session.query(Article).count()
 
 
 def get_urls(session):
@@ -182,9 +165,8 @@ def get_links_url(session, url):
     :type url: str.
     :returns: list of strings - list of urls
     """
-    id = session.query(Article.id).filter(Article.url == url).first()
-    url = session.query(Meta.value).filter(Meta.meta_key == 'links', Meta.article_id == id)
-    return [u[0].split() for u in url][0]
+    links = session.query(Article.links).filter(Article.url == url).first()
+    return [link[0].split() for link in links][0]
 
 
 def update_page_rank(session, url, pagerank):
@@ -199,9 +181,7 @@ def update_page_rank(session, url, pagerank):
     :type pagerank: float
     :returns: None
     """
-
-    id = session.query(Article.id).filter(Article.url == url).first()
-    session.query(Meta).filter(Meta.article_id == id, Meta.meta_key == 'page_rank').update({'value': pagerank})
+    session.query(Article).filter(Article.url == url).update({'page_rank': pagerank})
     session.commit()
 
 
