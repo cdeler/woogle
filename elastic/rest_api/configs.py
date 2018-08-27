@@ -25,7 +25,6 @@ class Config(object):
     """
     A configuration object that contains the settings for hosts and ports.
     """
-
     def __init__(self):
         self.elastic_host = "127.0.0.1"
         self.api_host = "0.0.0.0"
@@ -40,11 +39,7 @@ class Config(object):
         """
         config = configparser.ConfigParser()
         try:
-            config.read(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    "config",
-                    "config_service.ini"))
+            config.read(os.path.join(os.path.dirname(__file__), "config", "config_service.ini"))
             self.elastic_host = config.get("elasticsearch", "host")
             self.elastic_port = config.get("elasticsearch", "port")
             self.api_host = config.get("rest_api", "host")

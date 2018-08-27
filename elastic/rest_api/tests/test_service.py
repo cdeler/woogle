@@ -3,8 +3,9 @@ from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
 from aiohttp import web
 
 
-negative_response = """{"status": "failed", "message": "\"Key not found: 'index'\""}"""
 
+
+negative_response = """{"status": "failed", "message": "\"Key not found: 'index'\""}"""
 
 class TestCase(AioHTTPTestCase):
     async def get_application(self):
@@ -21,7 +22,6 @@ class TestCase(AioHTTPTestCase):
         assert resp.status == 200
         text = await resp.text()
         assert negative_response in text
-
 
 if __name__ == '__main__':
     TestCase()

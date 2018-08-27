@@ -29,7 +29,7 @@ services:
     container_name: elasticsearch
     environment:
       - cluster.name=docker-cluster
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.enforce.bootstrap.checks=true"
+      - "ES_JAVA_OPTS=-Xms500m -Xmx500m -Des.enforce.bootstrap.checks=true"
       - bootstrap.memory_lock=false
       - xpack.security.enabled=false
     ulimits:
