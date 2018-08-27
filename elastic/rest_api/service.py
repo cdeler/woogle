@@ -37,6 +37,16 @@ def porter(request: web.Request):
 
 
 @asyncio.coroutine
+async def reindex(request: web.Request):
+    try:
+        response = await CONNECTOR.reindex(request)
+        return web.Response(body=json.dumps(response), status=200)
+    except Exception as error:
+        response_obj = {"status": "failed", "message": str(error)}
+        return web.Response(body=json.dumps(response_obj), status=500)
+
+
+@asyncio.coroutine
 def init(loop, host, port):
     """
     Initializing a web application, setting routes
@@ -52,7 +62,7 @@ def init(loop, host, port):
     app.add_routes([
         web.get("/", porter),
         web.get("/getpage", porter),
-        web.post("/", porter),
+        web.post("/reindex", reindex),
         web.delete("/", porter)
     ])
     handler = app._make_handler()

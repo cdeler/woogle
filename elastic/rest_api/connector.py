@@ -1,5 +1,6 @@
 import os
 import json
+from aiohttp import web
 
 from elasticsearch import Elasticsearch
 import elasticsearch
@@ -23,9 +24,9 @@ class Connector(object):
         # but then you must change the container name to the docker-compose.yml
         self.es = Elasticsearch([{"host": elastic_host, "port": elastic_port}], **kwargs)
         self.get_main_query_from_file()
-        self.delete_index()
-        self.add_mapping_and_setting()
-        self.add_simple_data_files()
+        # self.delete_index()
+        # self.add_mapping_and_setting()
+        # self.add_simple_data_files()
 
     def curl(self, request, method):
         """
@@ -46,16 +47,19 @@ class Connector(object):
             doc_id = request.query["id"]
             return self.es.delete(index=index, doc_type=doc_type, id=doc_id)
 
-        elif method == "POST":
-            doc_id = request.query["id"]
-            body = request.query["body"]
-            try:
-                return self.es.index(index=index, doc_type=doc_type, id=doc_id, body=body, ignore=400)
-            except Exception as e:
-                print(e)
-                return e
+        # elif method == "POST":
+        #     doc_id = request.query["id"]
+        #     body = request.query["body"]
+        #     try:
+        #         return self.es.index(index=index, doc_type=doc_type, id=doc_id, body=body, ignore=400)
+        #     except Exception as e:
+        #         print(e)
+        #         return e
 
-
+    async def reindex(self, request: web.Request):
+        post = await request.read()
+        obj = json.loads(post)
+        return self.es.index(index=obj["index"], doc_type=obj["doc_type"], id=obj["id"], body=obj["body"], ignore=400)
 
     def search(self, index, doc_type, search, search_mode):
         """
