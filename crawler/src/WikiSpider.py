@@ -17,7 +17,8 @@ STATE_CRAWLER = {'Working': 1,
 
 process = CrawlerProcess({
         'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
-        'LOG_LEVEL':'INFO'})
+        'LOG_LEVEL':'INFO'
+})
 
 def get_process(log_file,log_level,jobdir):
     setting={}
@@ -66,10 +67,7 @@ class WikiSpider(scrapy.Spider):
         :type arg: str
         """
         super(WikiSpider, self).__init__()
-        #if arg is not None:
-        #    self.args = arg_str2dict(arg)
-        #else:
-        #    self.args = arg
+
         self.output=output
         self.silent=silent
         # init language
@@ -92,11 +90,6 @@ class WikiSpider(scrapy.Spider):
         :param response:
         :return:
         """
-        # stats
-        self.stats.set_value('current_page', response.url)
-        # database
-        self.add_curr_info_db()
-
         yield from self.parse_all_pages(response)
 
         next_page = response.xpath(
@@ -116,9 +109,13 @@ class WikiSpider(scrapy.Spider):
         """
         pages = response.xpath(
             '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
-        for page in pages:
+        for i,page in enumerate(pages):
             if page is not None:
                 yield response.follow(page, callback=self.parse_wiki_pages)
+        # stats
+        self.stats.set_value('current_page', response.url)
+        # database
+        self.add_curr_info_db()
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
@@ -136,6 +133,7 @@ class WikiSpider(scrapy.Spider):
             self.processor.process(response)
 
         self.stats.inc_value('pages_crawled')
+
 
     def init_params(self):
         logging.info('Init language options')

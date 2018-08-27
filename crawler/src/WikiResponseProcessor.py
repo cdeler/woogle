@@ -165,7 +165,12 @@ class DBResponseProcessor(WikiResponseProcessor):
             return 0
 
         soup = BeautifulSoup(text, 'lxml')
-        paragraph = soup.select('div.mw-parser-output > p')[0]
+
+        try:
+            paragraph = soup.select('div.mw-parser-output > p')[0]
+        except Exception as e:
+            return 0
+
         links = ''
 
         while paragraph.text.strip() == '':
@@ -186,8 +191,6 @@ class DBResponseProcessor(WikiResponseProcessor):
                 break
         article_info = {'title': title, 'url': url, 'text': content, 'state':state}
         meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
-
         session = database_binding.init_db()
         database_binding.update(session, id_to_update, article_info, meta_info)
-
         #print('-')
