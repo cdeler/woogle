@@ -108,10 +108,10 @@ def update(session, id, article_info, meta_info):
 
 
 def reparse_by_id(session, id, url):
-    update_state_by_id(session=session, id=id, state="complete")
     response = requests.get(url)
     response = HtmlResponse(url=url, body=response.content)
     WikiResponseProcessor.DBResponseProcessor().process_download(response, id_to_update=id)
+    update_state_by_id(session=session, id=id, state="complete")
 
 
 def delete(session, id=None, title=None, url=None):

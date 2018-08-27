@@ -9,7 +9,7 @@ class Article(base):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     title = Column(TEXT)
     url = Column(TEXT)
-    text = Column(TEXT)
+    text = Column(TEXT, nullable=True)
     state = Column(VARCHAR(20), default="waiting")
 
 

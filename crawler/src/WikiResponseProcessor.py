@@ -135,12 +135,12 @@ class DBResponseProcessor(WikiResponseProcessor):
             return 0
         url = response.url
         base = url[:24]
-        content = ' '
+        #content = ' '
         links = " "
         state = "waiting"
 
         # session = database_binding.init_db()
-        article_info = {'title': title, 'url': url, 'text': content, 'state': state}
+        article_info = {'title': title, 'url': url, 'state': state}
         meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
 
         if id_to_update:
@@ -155,8 +155,9 @@ class DBResponseProcessor(WikiResponseProcessor):
         url = response.url
         last_time_updated = response.xpath('//li[@id="footer-info-lastmod"]/text()').extract_first()
         base = url[:24]
-        content = ' '
+        content = ''
         state = "complete"
+
         try:
             text = response.xpath('//div[@class="mw-parser-output"]').extract()[0]
         except Exception:
@@ -168,7 +169,12 @@ class DBResponseProcessor(WikiResponseProcessor):
         links = ''
 
         while paragraph.text.strip() == '':
-            paragraph = paragraph.find_next_sibling('p')
+            tmp= paragraph.find_next_sibling('p')
+            if tmp:
+                paragraph=tmp
+            else:
+                break
+
         while True:
             content += paragraph.text
             for link in paragraph.findAll('a', attrs={'href': re.compile("^/wiki")}):
@@ -180,8 +186,8 @@ class DBResponseProcessor(WikiResponseProcessor):
                 break
         article_info = {'title': title, 'url': url, 'text': content, 'state':state}
         meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
-        session = database_binding.init_db()
 
+        session = database_binding.init_db()
         database_binding.update(session, id_to_update, article_info, meta_info)
 
         #print('-')

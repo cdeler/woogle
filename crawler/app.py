@@ -30,12 +30,8 @@ def multiprocess(count_workers: int, args):
 
 
 def wiki_spider(args):
-    #with PidFile(name=arg_dict['pidfile']):
-    opt_for_crawler=['language','output','silent']
-    arguments_for_crawler = functools.reduce(
-        lambda x, y: x + y, [f"{key}={value} " for key, value in args.items() if key in opt_for_crawler], "")
     with PidFile(name=args['pidfile']):
-        logging.info(f"Crawler starts with options: {arguments_for_crawler}")
+        logging.info(f"Crawler starts with options: {args}")
         process = get_process(args['logfile'],args['loglevel'],args['jobdir'])
         process.crawl(WikiSpider, args['language'],args['output'],args['silent'])
         process.start()  # the script will block here until the crawling is finished
