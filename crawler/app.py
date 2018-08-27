@@ -12,7 +12,7 @@ from src import downloader
 
 MAX_COUNT_THREADS = 10
 CHOICE_LANGUAGE = list(setting.LANGUAGE_SETTING.keys())  # ['ru', 'en']
-CHOICE_OUTPUT = ['stdout', 'db', 'directory']
+CHOICE_OUTPUT = ['db', 'stdout','directory']
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 
 def multiprocess(count_workers: int, args):

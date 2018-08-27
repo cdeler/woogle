@@ -146,7 +146,7 @@ class DBResponseProcessor(WikiResponseProcessor):
         if id_to_update:
             database_binding.update(session, id_to_update, article_info, meta_info)
         else:
-            database_binding.insert(session, article_info, meta_info)
+            return database_binding.insert(session, article_info, meta_info)
 
 
 

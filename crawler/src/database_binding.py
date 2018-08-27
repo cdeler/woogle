@@ -93,8 +93,10 @@ def insert(session, article_info, meta_info):
         session.add(Meta(article_id=article.id, meta_key='page_rank', value=meta_info['page_rank']))
         session.add(Meta(article_id=article.id, meta_key='last_time_updated', value=meta_info['last_time_updated']))
         session.commit()
+        return True
     except sqlalchemy.exc.IntegrityError:
         session.rollback()
+        return False
 
 
 def update(session, id, article_info, meta_info):

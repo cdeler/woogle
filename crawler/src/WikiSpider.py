@@ -90,32 +90,28 @@ class WikiSpider(scrapy.Spider):
         :param response:
         :return:
         """
-        yield from self.parse_all_pages(response)
+        # stats
+        self.stats.set_value('current_page', response.url)
+        # database
+        self.add_curr_info_db()
+
+        pages = response.xpath(
+            '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
+
+        for page in pages:
+            if page is not None:
+                yield response.follow(page, callback=self.parse_wiki_pages,priority=response.request.priority+1)
 
         next_page = response.xpath(
             f'//a[contains(text(), "{self.next_page_words}")]/@href').extract_first()
 
         if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
+            yield response.follow(next_page, callback=self.parse,priority=response.request.priority)
         else:
             # stats
             self.stats.set_value('current_page', None)
-
-    def parse_all_pages(self, response):
-        """ Method that calls parsing processor for wiki articles
-
-        :param response:
-        :return:
-        """
-        pages = response.xpath(
-            '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
-        for i,page in enumerate(pages):
-            if page is not None:
-                yield response.follow(page, callback=self.parse_wiki_pages)
-        # stats
-        self.stats.set_value('current_page', response.url)
-        # database
-        self.add_curr_info_db()
+            # database
+            self.add_curr_info_db()
 
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
@@ -123,16 +119,14 @@ class WikiSpider(scrapy.Spider):
         :param response:
         :return:
         """
-
         self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
             self.output)
 
         if self.output == 'stdout':
             self.processor.process(response, silent=self.silent)
         else:
-            self.processor.process(response)
-
-        self.stats.inc_value('pages_crawled')
+            if self.processor.process(response):
+                self.stats.inc_value('pages_crawled')
 
 
     def init_params(self):
