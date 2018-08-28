@@ -8,5 +8,5 @@
   
   "size": 20,
   "_source": ["title", "pageid"],
-  "sort": [{"_score": "desc"}]
+  "sort": [{"page_rank": "desc"}, {"_score": "desc"}]
 }

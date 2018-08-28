@@ -74,13 +74,13 @@
   "mappings": {
     "page": {
       "properties": {
-        "pageid": { "type": "integer" },
         "title": {
             "type": "completion",
             "analyzer": "autocomplete"
          },
-        "content": { "type": "text" },
         "url": { "type": "keyword" },
+        "content": { "type": "text" },
+        "page_rank": { "type": "float" },
         "stash":  { "type": "object", "dynamic":  true }
       }
     }
