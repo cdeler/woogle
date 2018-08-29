@@ -135,29 +135,27 @@ class DBResponseProcessor(WikiResponseProcessor):
             return 0
         url = response.url
         base = url[:24]
-        #content = ' '
-        links = " "
+        content = ' '
+        links = []
         state = "waiting"
 
         # session = database_binding.init_db()
-        article_info = {'title': title, 'url': url, 'state': state}
-        meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
+        article_info = {'title': title, 'url': url, 'text': content, 'state': state, 'page_rank': 0, 'last_time_updated': last_time_updated}
 
         if id_to_update:
-            database_binding.update(session, id_to_update, article_info, meta_info)
+            database_binding.update(session, id_to_update, article_info)
         else:
-            return database_binding.insert(session, article_info, meta_info)
+            database_binding.insert(session, article_info)
 
 
 
-    def process_download(self, response, id_to_update=True):
+    def process_download(self, response, id_to_update=None):
         title = response.xpath('//title/text()').extract_first()
         url = response.url
         last_time_updated = response.xpath('//li[@id="footer-info-lastmod"]/text()').extract_first()
         base = url[:24]
         content = ''
         state = "complete"
-
         try:
             text = response.xpath('//div[@class="mw-parser-output"]').extract()[0]
         except Exception:
@@ -171,7 +169,7 @@ class DBResponseProcessor(WikiResponseProcessor):
         except Exception as e:
             return 0
 
-        links = ''
+        links = []
 
         while paragraph.text.strip() == '':
             tmp= paragraph.find_next_sibling('p')
@@ -183,14 +181,17 @@ class DBResponseProcessor(WikiResponseProcessor):
         while True:
             content += paragraph.text
             for link in paragraph.findAll('a', attrs={'href': re.compile("^/wiki")}):
-                full_link = base + link.get('href') + ' '
-                links += full_link
+                # full_link = base + link.get('href') + ' '
+                full_link = base + link.get('href')
+                links.append(full_link)
             if paragraph.next_sibling.name == 'p':
                 paragraph = paragraph.next_sibling
             else:
                 break
-        article_info = {'title': title, 'url': url, 'text': content, 'state':state}
-        meta_info = {'links': links, 'page_rank': 0, 'last_time_updated': last_time_updated}
+
+        article_info = {'title': title, 'url': url, 'text': content, 'state':state, 'page_rank': 0, 'last_time_updated': last_time_updated}
         session = database_binding.init_db()
-        database_binding.update(session, id_to_update, article_info, meta_info)
-        #print('-')
+        database_binding.update(session, id_to_update, article_info)
+        database_binding.add_links(session, id_to_update, links)
+
+        print('-')
