@@ -106,7 +106,7 @@ def add_links(session, id, links):
         link_id = session.query(Article.id).filter(Article.url == link).first()
         if link_id:
             session.add(Links(article_id=id, link_article_id=link_id))
-            session.commit()
+            # session.commit()
         else:
             try:
                 article = Article(title=' ', url=link, text=' ', state='waiting', page_rank=0, last_time_updated=' ')
@@ -114,9 +114,13 @@ def add_links(session, id, links):
                 session.commit()
                 link_id = article.id
                 session.add(Links(article_id=id, link_article_id=link_id))
-                session.commit()
+            #     session.commit()
             except sqlalchemy.exc.IntegrityError:
                 session.rollback()
+    try:
+        session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        session.rollback()
 
 
 def reparse_by_id(session, id, url):
