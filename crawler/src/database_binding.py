@@ -102,7 +102,7 @@ def update(session, id, article_info):
 
 
 def add_links(session, id, links):
-    for link in links:
+    for link in set(links):
         link_id = session.query(Article.id).filter(Article.url == link).first()
         if link_id:
             session.add(Links(article_id=id, link_article_id=link_id))

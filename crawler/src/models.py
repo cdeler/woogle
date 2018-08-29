@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 
 base = declarative_base()
@@ -18,6 +18,7 @@ class Links(base):
     __tablename__ = 'links'
     article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
     link_article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
+    __table_args__ = (UniqueConstraint('article_id', 'link_article_id', name='_article_link_uc'),)
 
 class CrawlerStats(base):
     __tablename__ = 'crawler_stats'
