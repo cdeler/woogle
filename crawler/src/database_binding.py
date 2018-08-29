@@ -186,8 +186,11 @@ def get_links_url(session, url):
     :type url: str.
     :returns: list of strings - list of urls
     """
-    links = session.query(Article.links).filter(Article.url == url).first()
-    return [link[0].split() for link in links][0]
+    id = session.query(Article.id).filter(Article.url == url).first()
+    links_id = session.query(Links.link_article_id).filter(Links.article_id == id)
+    return [session.query(Article.url).filter(Article.id == link_id).first()[0] for link_id in links_id]
+    # links = session.query(Article.links).filter(Article.url == url).first()
+    # return [link[0].split() for link in links][0]
 
 
 def update_page_rank(session, url, pagerank):
