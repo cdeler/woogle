@@ -13,7 +13,7 @@ COPY app /app
 COPY cmd.sh /
 COPY wait-postgres.sh /
 COPY backup.sh /
-RUN 0 * * * * backup.sh
+
 
 
 EXPOSE 8080 8080
