@@ -11,10 +11,13 @@ class Article(base):
     url = Column(TEXT)
     text = Column(TEXT)
     state = Column(VARCHAR(20), default="waiting")
-    links = Column(TEXT)
-    page_rank = Column(INTEGER, default=0)
+    page_rank = Column(FLOAT, default=0)
     last_time_updated = Column(VARCHAR(1024))
 
+class Links(base):
+    __tablename__ = 'links'
+    article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
+    link_article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
 
 class CrawlerStats(base):
     __tablename__ = 'crawler_stats'

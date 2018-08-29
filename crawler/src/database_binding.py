@@ -1,4 +1,4 @@
-from src.models import Article, CrawlerStats, base
+from src.models import Article, Links, CrawlerStats, base
 from src import WikiResponseProcessor as WikiResponseProcessor
 
 from sqlalchemy import create_engine
@@ -89,6 +89,9 @@ def insert(session, article_info):
         article = Article(**article_info)
         session.add(article)
         session.commit()
+        # id = article.id
+        # session.add(Links(id, get_id_by_url(session, links)))
+        # session.commit()
     except sqlalchemy.exc.IntegrityError:
         session.rollback()
 
@@ -96,6 +99,24 @@ def insert(session, article_info):
 def update(session, id, article_info):
     session.query(Article).filter(Article.id == id).update(article_info)
     session.commit()
+
+
+def add_links(session, id, links):
+    for link in links:
+        link_id = session.query(Article.id).filter(Article.url == link).first()
+        if link_id:
+            session.add(Links(article_id=id, link_article_id=link_id))
+            session.commit()
+        else:
+            try:
+                article = Article(title=' ', url=link, text=' ', state='waiting', page_rank=0, last_time_updated=' ')
+                session.add(article)
+                session.commit()
+                link_id = article.id
+                session.add(Links(article_id=id, link_article_id=link_id))
+                session.commit()
+            except sqlalchemy.exc.IntegrityError:
+                session.rollback()
 
 
 def reparse_by_id(session, id, url):
