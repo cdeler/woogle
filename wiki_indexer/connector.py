@@ -1,8 +1,4 @@
 from sqlalchemy import create_engine, MetaData, Table, engine
-from elasticsearch import Elasticsearch
-from multiprocessing.pool import ThreadPool
-import sqlalchemy
-import requests
 import asyncio
 import aiohttp
 
@@ -79,10 +75,14 @@ class Connector:
         for i in range(len(self.headers)):
             if self.headers[i].name == 'text':
                 result['content'] = row[i]
+            if self.headers[i].name == 'id':
+                result['pageid'] = row[i]
             else:
                 result[self.headers[i].name] = row[i]
         del result['links']
-        del result['id']
+        del result['text']
+        del result['state']
+
         return result
 
     @property
@@ -97,41 +97,14 @@ class Connector:
             result_set = conn.execute(select_statement)
         return result_set
 
-    # def _index(self, row):
-    #     """
-    #     Method that send single requests to index service.
-    #
-    #     :param row: sqlalchemy.RowProxy
-    #     :return: None
-    #     """
-    #     url = "http://0.0.0.0:5000/"
-    #     querystring = {
-    #             "index": self.elastic_index,
-    #             "doc_type": self.elastic_doc_type,
-    #             "id": row[self.primary_key],
-    #             "body": f'{self.get_json_from_row(row)}'}
-    #     response = requests.request("POST", url, params=querystring)
-    #     print(response.content)
-    #     return response.content
-    #
-    # def index(self, threads=20):
-    #     """
-    #     Method that create event_loop for asuc sending.
-    #
-    #     :param id: id of seperate article.
-    #     :return: None.
-    #     """
-    #     pool = ThreadPool(threads)
-    #     pool.map(self._index, self.table_set)
-    #     pool.close()
-    #     pool.join()
+
     async def _index(self, row):
         """
         Method that send single requests to index service.
         :param row: sqlalchemy.RowProxy
         :return: None
         """
-        url = "http://0.0.0.0:5000/reindex"
+        url = "http://rest_api:5000/reindex"
         querystring = {
             "index": self.elastic_index,
             "doc_type": self.elastic_doc_type,

@@ -5,3 +5,4 @@ requests
 aiohttp
 asyncio
 psycopg2
+numpy
