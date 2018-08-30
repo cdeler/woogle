@@ -92,8 +92,10 @@ def insert(session, article_info):
         # id = article.id
         # session.add(Links(id, get_id_by_url(session, links)))
         # session.commit()
+        return True
     except sqlalchemy.exc.IntegrityError:
         session.rollback()
+        return False
 
 
 def update(session, id, article_info):

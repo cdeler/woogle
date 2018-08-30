@@ -6,5 +6,4 @@ if [ "$ENV" = 'DEV' ]; then
 else
   echo "Running Production Server"
   exec uwsgi --ini /app/woogle/uwsgi.ini --http :8000
-  exec 0 * * * * /backup.sh
 fi

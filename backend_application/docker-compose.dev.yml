@@ -18,7 +18,7 @@ services:
     container_name: django_web
     environment:
       ENV: DEV
-    command: ["/wait-postgres.sh","db:5432","-t", "60","--","/cmd.sh"] 
+    command: ["/wait-postgres.sh","db:5432","-t", "60","--","/cmd.sh"]
     volumes:
       - ./app:/app
     ports:

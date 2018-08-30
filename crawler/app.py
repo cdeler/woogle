@@ -1,5 +1,7 @@
+"""
+Runs  crawler (WikiSpider) and downloader
+"""
 import argparse
-import functools
 import logging
 import concurrent.futures
 import multiprocessing
@@ -16,6 +18,14 @@ CHOICE_OUTPUT = ['db', 'stdout','directory']
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 
 def multiprocess(count_workers: int, args):
+    """
+    Runs WikiSpider in one process and runs in count_workers-1 processes the downloader
+    :param count_workers: count processes
+    :type count_workers: int
+    :param args: argument for crawler
+    :type args: dict
+    :return: None
+    """
     futures = set()
     with concurrent.futures.ProcessPoolExecutor(max_workers=count_workers) as executor:
         future = executor.submit(fn=wiki_spider, args=args)
@@ -30,12 +40,17 @@ def multiprocess(count_workers: int, args):
 
 
 def wiki_spider(args):
+    """
+    Runs crawler with arguments
+    :param args: arguments for crawler
+    :type args: dict
+    :return: None
+    """
     with PidFile(name=args['pidfile']):
         logging.info(f"Crawler starts with options: {args}")
-        process = get_process(args['logfile'],args['loglevel'],args['jobdir'])
+        process = get_process(args['logfile'],args['loglevel'])
         process.crawl(WikiSpider, args['language'],args['output'],args['silent'])
         process.start()  # the script will block here until the crawling is finished
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -95,10 +110,6 @@ if __name__ == "__main__":
     if arg['silent'] and arg['output'] != 'stdout':
         msg = "isn't used with argument -o|--output equal 'stdout'"
         raise argparse.ArgumentError(arg_s, msg)
-
-    # call crawler with given parameters
-    # command for running looks like: scrapy runspider spider.py -a [arg1=val1
-    # arg2=val2 ...]
 
     # database_binding.DB_STRING.replace("localhost", arg["host"])
 

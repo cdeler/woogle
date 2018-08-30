@@ -15,7 +15,6 @@ COPY wait-postgres.sh /
 COPY backup.sh /
 
 
-
 EXPOSE 8080 8080
 EXPOSE 8000 8000
 EXPOSE 5000 5000

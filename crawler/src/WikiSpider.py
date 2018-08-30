@@ -20,14 +20,18 @@ process = CrawlerProcess({
         'LOG_LEVEL':'INFO'
 })
 
-def get_process(log_file,log_level,jobdir):
+def get_process(log_file,log_level):
+    """
+    Returns process with settings
+    :param log_file:
+    :param log_level:
+    :return:
+    """
     setting={}
     if log_file:
         setting.update({'LOG_FILE':log_file})
     if log_level:
-        setting.update({'LOG_LEVEL': log_level})
-    if jobdir:
-        setting.update({'JOBDIR': log_level})
+        setting.update({'LOG_LEVEL':log_level})
     process.settings.update(setting)
     return process
 
@@ -54,13 +58,12 @@ class WikiSpider(scrapy.Spider):
     def __init__(self, stats=None,language='ru',output='db',silent=False):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
-            num_threads: count threads
             language: wikipedia language (ru, en)
             output: output (stdout, db, directory)
             silent: flag, turn on silent mode, use with output=stdout
         if one of the arguments is not specified, the following next value:
             language=ru
-            output=directory
+            output=db
             silent=False
 
         :param arg: agrument for crawler
