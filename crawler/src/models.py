@@ -8,16 +8,18 @@ class Article(base):
     __tablename__ = 'wikisearch_article'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     title = Column(TEXT)
-    url = Column(TEXT)
-    text = Column(TEXT, nullable=True)
+    url = Column(TEXT, unique=True)
+    text = Column(TEXT)
+    links = Column(TEXT)
+    page_rank = Column(FLOAT, default=0)
     state = Column(VARCHAR(20), default="waiting")
 
 
-class Meta(base):
-    __tablename__ = 'meta'
-    article_id = Column(INTEGER, ForeignKey('wikisearch_article.id'), primary_key=True)
-    meta_key = Column(VARCHAR(255), primary_key=True)
-    value = Column(TEXT)
+# class Meta(base):
+#     __tablename__ = 'meta'
+#     article_id = Column(INTEGER, ForeignKey('articles.id'), primary_key=True)
+#     meta_key = Column(VARCHAR(255))
+#     value = Column(VARCHAR(255))
 
 
 class CrawlerStats(base):

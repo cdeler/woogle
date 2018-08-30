@@ -84,7 +84,9 @@ class Connector:
             else:
                 result[self.headers[i].name] = row[i]
         del result['links']
-        
+        del result['text']
+        del result['state']
+
         return result
 
     @property

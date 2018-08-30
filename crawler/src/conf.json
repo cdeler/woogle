@@ -1,3 +1,0 @@
-{
-     "db_string" : "postgres://postgres:password@postgres:5432/crawler_bd"
-}

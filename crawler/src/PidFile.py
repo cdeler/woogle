@@ -4,11 +4,9 @@ import sys
 
 
 def PidFile(path=os.path.curdir, name='pidfile'):
-    print('3')
     if sys.platform == 'linux' or sys.platform == 'darwin':
         return PidFileLinux(path=path, name=name)
     elif sys.platform.find('win') != -1:
-        print('4')
         return PidFileWin(path=path, name=name)
     else:
         raise OSError(
