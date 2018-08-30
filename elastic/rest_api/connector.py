@@ -75,7 +75,7 @@ class Connector(object):
 
         # for query with suggest
         main_search_query["suggest"]["title_suggestion"]["text"] = search
-        response = self.es.search(index=index, doc_type=doc_type, body=main_search_query)
+        response = self.es.search(index=index, doc_type=doc_type, body=main_search_query, ignore=400)
         return self.response_filter(response, search_mode)
 
     @staticmethod

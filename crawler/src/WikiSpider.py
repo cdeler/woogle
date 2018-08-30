@@ -1,6 +1,8 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy import signals
+from twisted.internet import reactor
+from scrapy.crawler import CrawlerRunner
 import datetime
 import logging
 
@@ -8,43 +10,27 @@ from src import WikiResponseProcessor as WikiResponseProcessor
 from src import setting_language as setting
 from src import database_binding as database_binding
 
-STATE_CRAWLER = {
-    'Working': 1,
-    'Shutdown': 2,
-    'Finished': 3,
-    'Delegated': 4
-}
+STATE_CRAWLER = {'Working': 1,
+                 'Shutdown': 2,
+                 'Finished': 3,
+                 'Delegated': 4}
 
 process = CrawlerProcess({
-    'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
-    'LOG_FILE': 'log.txt',
-    'LOG_LEVEL': 'INFO'
+        'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)',
+        'LOG_LEVEL':'INFO',
+        'DOWNLOAD_DELAY': 0.2
 })
 
-
-def arg_str2dict(arg):
-    """
-    Converting argument from "arg1=va1 arg2=val2 ..." to dict {arg1:va1, arg2:val2, ...}
-    :param args: str
-    :return: dict
-    """
-    try:
-        arg_dict = {i.split('=')[0]: i.split('=')[1] for i in arg.split()}
-    except Exception as e:
-        raise TypeError(
-            "Invalid format argument:\n f{arg} \n Correct format: 'arg1=va1 arg2=val2 ...' ") from e
-
-    if 'silent' in arg_dict:
-        if arg_dict['silent'] == "False":
-            arg_dict['silent'] = False
-        elif arg_dict['silent'] == "True":
-            arg_dict['silent'] = True
-        else:
-            raise ValueError(
-                f"Invalid mode silent - {arg_dict['silent']}. Correct value of argument 'silent' - True, False ")
-
-    return arg_dict
-
+def get_process(log_file,log_level,jobdir):
+    setting={}
+    if log_file:
+        setting.update({'LOG_FILE':log_file})
+    if log_level:
+        setting.update({'LOG_LEVEL': log_level})
+    if jobdir:
+        setting.update({'JOBDIR': log_level})
+    process.settings.update(setting)
+    return process
 
 def choose_language(arg):
     # setup language setting
@@ -58,7 +44,7 @@ def choose_language(arg):
             return arg['language']
         else:
             raise ValueError(
-                f"Value of argument 'language' - {self.args['language']} is invalid. Correct value - {languages}")
+                f"Value of argument 'language' - {arg['language']} is invalid. Correct value - {languages}")
     else:
         return language_default
 
@@ -66,7 +52,7 @@ def choose_language(arg):
 class WikiSpider(scrapy.Spider):
     name = 'WikiSpider'
 
-    def __init__(self, stats=None, arg=None):
+    def __init__(self, stats=None,language='ru',output='db',silent=False):
         """
         Getting next arguments in format: arg1=va1 arg2=val2 ...":
             num_threads: count threads
@@ -82,24 +68,21 @@ class WikiSpider(scrapy.Spider):
         :type arg: str
         """
         super(WikiSpider, self).__init__()
-        if arg is not None:
-            self.args = arg_str2dict(arg)
-        else:
-            self.args = arg
 
+        self.output=output
+        self.silent=silent
         # init language
-        self.language = choose_language(self.args)
+        self.language = choose_language(language)
         # stats
         self.stats = stats
         # init languge params (next page, start page, etc.)
         self.init_params()
-        # init crawler in database
-        self.add_start_info_db()
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = cls(crawler.stats, *args, **kwargs)
         crawler.signals.connect(spider.closed, signal=signals.spider_closed)
+        crawler.signals.connect(spider.opened,signal=signals.spider_opened)
         return spider
 
     def parse(self, response):
@@ -113,40 +96,39 @@ class WikiSpider(scrapy.Spider):
         # database
         self.add_curr_info_db()
 
-        yield from self.parse_wiki_pages(response)
+        pages = response.xpath(
+            '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
 
-        next_page = response.xpath(f'//a[contains(text(), "{self.next_page_words}")]/@href').extract_first()
+        for page in pages:
+            if page is not None:
+                yield response.follow(page, callback=self.parse_wiki_pages,priority=response.request.priority+1)
+
+        next_page = response.xpath(
+            f'//a[contains(text(), "{self.next_page_words}")]/@href').extract_first()
 
         if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
+            yield response.follow(next_page, callback=self.parse,priority=response.request.priority)
         else:
             # stats
             self.stats.set_value('current_page', None)
-
+            # database
+            self.add_curr_info_db()
+            
     def parse_wiki_pages(self, response):
         """ Method that calls parsing processor for wiki articles
 
         :param response:
         :return:
         """
-        self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(self.args)
-        # stats
-        self.stats.inc_value('pages_crawled')
+        self.processor = WikiResponseProcessor.WikiResponseProcessor.getWikiResponseProcessor(
+            self.output)
 
-        if self.args and 'output' in self.args:
-            if self.args['output'] == 'stdout' and 'silent' in self.args:
-                self.processor.process(response, silent=self.args['silent'])
-            else:
-                self.processor.process(response)
+        if self.output == 'stdout':
+            self.processor.process(response, silent=self.silent)
         else:
-            self.processor.process(response)
+            if self.processor.process(response):
+                self.stats.inc_value('pages_crawled')
 
-        pages = response.xpath(
-            '//ul[@class="mw-allpages-chunk"]//a/@href').extract()
-        for page in pages:
-            if page is not None:
-                #  page is url page
-                yield response.follow(page, callback=self.parse_wiki_pages)
 
     def init_params(self):
         logging.info('Init language options')
@@ -155,23 +137,29 @@ class WikiSpider(scrapy.Spider):
             setting.LANGUAGE_SETTING[self.language]['allowed_domains']]
         self.next_page_words = setting.LANGUAGE_SETTING[self.language]['next_page_words']
 
-        # get shutdown_crawler
-        shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
-            self.language, STATE_CRAWLER['Shutdown'])
+        if self.output == 'db':
+            # get shutdown_crawler
+            shutdown_crawler = database_binding.CrawlerStatsActions.get_shutdown_crawler(
+                self.language, STATE_CRAWLER['Shutdown'])
 
-        # if shutdown crawler is exist
-        if shutdown_crawler:
-            logging.info(
-                f"Selected shutdown crawler with id: {shutdown_crawler.instance.id}")
-            self.start_urls = [shutdown_crawler.instance.current_page]
-            self.stats.set_value(
-                'pages_crawled',
-                shutdown_crawler.instance.pages_crawled)
+            # if shutdown crawler is exist
+            if shutdown_crawler:
+                logging.info(
+                    f"Selected shutdown crawler with id: {shutdown_crawler.instance.id}")
+                self.start_urls = [shutdown_crawler.instance.current_page]
+                self.stats.set_value(
+                    'pages_crawled',
+                    shutdown_crawler.instance.pages_crawled)
 
-            shutdown_crawler.update(
-                state='Delegated',
-                state_id=STATE_CRAWLER['Delegated'])
+                shutdown_crawler.update(
+                    state='Delegated',
+                    state_id=STATE_CRAWLER['Delegated'])
 
+            else:
+                logging.info("Init new crawler")
+                self.start_urls = [
+                    setting.LANGUAGE_SETTING[self.language]['start_urls']]
+                self.stats.set_value('pages_crawled', 0)
         else:
             logging.info("Init new crawler")
             self.start_urls = [
@@ -179,6 +167,7 @@ class WikiSpider(scrapy.Spider):
             self.stats.set_value('pages_crawled', 0)
 
         self.stats.set_value('current_page', self.start_urls[0])
+
 
     def add_start_info_db(self):
         """
@@ -192,7 +181,7 @@ class WikiSpider(scrapy.Spider):
         :return: None
         """
         # write in database
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             self.db_actions = database_binding.CrawlerStatsActions()
             self.db_actions.create(
                 start_time=str(datetime.datetime.now()),
@@ -210,7 +199,7 @@ class WikiSpider(scrapy.Spider):
                current_page: current url page with article
         :return: None
         """
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             self.db_actions.update(
                 pages_crawled=self.stats.get_value('pages_crawled'),
                 current_page=self.stats.get_value('current_page'))
@@ -226,7 +215,7 @@ class WikiSpider(scrapy.Spider):
                 finish_reason: finish reason from stats
          :return: None
          """
-        if self.args and 'output' in self.args and self.args['output'] == 'db':
+        if self.output == 'db':
             if self.stats.get_value('current_page'):
                 self.db_actions.update(
                     pages_crawled=self.stats.get_value('pages_crawled'),
@@ -243,13 +232,10 @@ class WikiSpider(scrapy.Spider):
                     state='Finished',
                     finish_time=datetime.datetime.now(),
                     finish_reason=reason)
+    def opened(self):
+        logging.info("Spider opened")
+        self.add_start_info_db()
 
     def closed(self, reason):
+        logging.info("Spider Closed")
         self.add_finish_info_db(reason)
-
-def execute_spider():
-    """
-    Function to execute crawler from outside.
-    :return: None
-    """
-    print("execute_spider")

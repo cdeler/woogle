@@ -19,7 +19,6 @@ class Connector:
     """Class that presents connector between database and
     elasticsearch.
     """
-    es = Elasticsearch()
 
     def __init__(self, database, table, elastic_index, elastic_doc_type):
         """
@@ -75,7 +74,18 @@ class Connector:
         :returns: dict - that represent json
         :raises: TypeError, ValueError.
         """
-        return {self.headers[i].name: row[i] for i in range(len(self.headers))}
+        result = {}
+        result = {}
+        for i in range(len(self.headers)):
+            if self.headers[i].name == 'text':
+                result['content'] = row[i]
+            if self.headers[i].name == 'id':
+                result['pageid'] = row[i]
+            else:
+                result[self.headers[i].name] = row[i]
+        del result['links']
+        
+        return result
 
     @property
     def table_set(self):
@@ -89,67 +99,75 @@ class Connector:
             result_set = conn.execute(select_statement)
         return result_set
 
+    # def _index(self, row):
+    #     """
+    #     Method that send single requests to index service.
+    #
+    #     :param row: sqlalchemy.RowProxy
+    #     :return: None
+    #     """
+    #     url = "http://0.0.0.0:5000/"
+    #     querystring = {
+    #             "index": self.elastic_index,
+    #             "doc_type": self.elastic_doc_type,
+    #             "id": row[self.primary_key],
+    #             "body": f'{self.get_json_from_row(row)}'}
+    #     response = requests.request("POST", url, params=querystring)
+    #     print(response.content)
+    #     return response.content
+    #
+    # def index(self, threads=20):
+    #     """
+    #     Method that create event_loop for asuc sending.
+    #
+    #     :param id: id of seperate article.
+    #     :return: None.
+    #     """
+    #     pool = ThreadPool(threads)
+    #     pool.map(self._index, self.table_set)
+    #     pool.close()
+    #     pool.join()
     async def _index(self, row):
         """
         Method that send single requests to index service.
-
         :param row: sqlalchemy.RowProxy
         :return: None
         """
-        url = "http://127.0.0.1:5000/"
-
+        url = "http://rest_api:5000/reindex"
         querystring = {
             "index": self.elastic_index,
             "doc_type": self.elastic_doc_type,
             "id": row[self.primary_key],
-            "params": f'{self.get_json_from_row(row)}'}
-
+            "body": self.get_json_from_row(row)}
+        print(f"{querystring} -----------")
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.post(url, json=querystring) as resp:
+                    print(resp)
                     data = await resp.text()
                     print(data)
             except aiohttp.client_exceptions.ClientOSError:
                 pass
 
-        response = requests.request("POST", url, params=querystring)
-        return response.content
 
     def index(self, id=None):
         """
         Method that create event_loop for asuc sending.
-
         :param id: id of seperate article.
         :return: None.
         """
-        set = None
+        selection = None
         features = []
         if id:
             with self.engine.connect() as conn:
                 select_statement = self.table.select().where(self.table.c.id == id)
-                set = conn.execute(select_statement).fetchone()
+                selection = conn.execute(select_statement).fetchall()
         else:
-            set = self.table_set
+            selection = self.table_set
 
-        for row in set:
+        for row in selection:
             features.append(self._index(row))
-        loop = asyncio.get_event_loop()
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(asyncio.wait(features))
-
-    def delete_index(self):
-        """
-        Method that delete all index inside elastisearch.
-
-        :return:None.
-         :raise: ElasticConnectionError
-        """
-        try:
-            self.es.indices.delete(index=self.elastic_index, ignore=[400, 404])
-        except Exception as e:
-            raise ElasticConnectionError(
-                "Connection to elasticsearch has failed") from e
-
-
-if __name__ == '__main__':
-    con = Connector('postgresql:///test', 'wiki', 'test', 'article')
-    con.index()

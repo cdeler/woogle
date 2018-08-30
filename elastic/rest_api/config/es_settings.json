@@ -78,6 +78,7 @@
             "type": "completion",
             "analyzer": "autocomplete"
          },
+        "pageid": { "type": "integer" },
         "url": { "type": "keyword" },
         "content": { "type": "text" },
         "page_rank": { "type": "float" },

@@ -8,8 +8,6 @@ import logging
 application = Flask(__name__)
 config = configparser.ConfigParser()
 config.read('app.ini')
-ROOT_LOGGER = logging.getLogger()
-ROOT_LOGGER.addHandler(logging.FileHandler('log.txt'))
 
 
 @application.route("/", methods=['POST'])
@@ -18,18 +16,18 @@ def get_tasks():
                                config['DataBase']['dbTable'],
                                config['Elasticsearch']['index'],
                                config['Elasticsearch']['doc_type'])
-    try:
-        if request.data.decode('ascii') == 'index':
-            conn.index()
-        elif request.data.decode('ascii') == 'delete':
-            conn.delete_index()
-        elif request.data.decode('ascii').isdigit():
-            conn.index(request.data.decode('ascii'))
-        else:
-            return abort(400)
-        return f'{request.data.decode("ascii")} is executed'
-    except Exception as e:
-        ROOT_LOGGER.exception(f'error {type(e).__name__}: {e.args[0]}')
+
+    if request.data.decode('ascii') == 'index':
+        conn.index()
+    elif request.data.decode('ascii') == 'delete':
+        print(request.data.decode('ascii'))
+        conn.delete_index()
+    elif request.data.decode('ascii').isdigit():
+        conn.index(request.data.decode('ascii'))
+    else:
+        return abort(400)
+    return f'{request.data.decode("ascii")} is executed'
+
 
 
 if __name__ == '__main__':

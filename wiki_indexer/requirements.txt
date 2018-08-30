@@ -2,3 +2,6 @@ Flask
 elasticsearch
 sqlalchemy
 requests
+aiohttp
+asyncio
+psycopg2

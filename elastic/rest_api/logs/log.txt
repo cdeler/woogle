@@ -1,0 +1,8 @@
+
+Beginning at: 2018-08-28 12:23:18.705326
+Serving on ('0.0.0.0', 5000). Hit CTRL-C to stop.
+
+Beginning at: 2018-08-28 12:26:59.282702
+Serving on ('0.0.0.0', 5000). Hit CTRL-C to stop.
+PUT http://elasticsearch:9200/wiki/page/31 [status:201 request:0.051s]
+172.18.0.1 [28/Aug/2018:12:28:03 +0000] "POST /reindex HTTP/1.1" 200 325 "-" "PostmanRuntime/7.2.0"

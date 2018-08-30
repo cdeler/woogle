@@ -2,9 +2,8 @@
 Module to compute pagerank from database.
 Algorithm based on 'https://en.wikipedia.org/wiki/PageRank'
 """
-import itertools
 import numpy as np
-from crawler.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
+from src.database_binding import init_db, get_urls, get_links_url, get_rows, update_page_rank
 import time
 from functools import wraps
 
@@ -14,7 +13,6 @@ SQUARE_ERROR = 1e-6
 def pageRank(adjacency_matrix, damping_factor=0.85, square_error=SQUARE_ERROR):
     """
     Function to get pagerank of the matrix.
-
     :param adjacency_matrix: matrix that represent graph of urls with dependicies.
     :type adjacency_matrix: np.array
     :param damping_factor: damping factor.
@@ -39,7 +37,6 @@ def pageRank(adjacency_matrix, damping_factor=0.85, square_error=SQUARE_ERROR):
 def create_graph(session):
     """
     Function that create matrix from database.
-
     :param session: session with database.
     :type session: sqlalchemy.session.
     :return: Graph with dependices.
@@ -64,7 +61,6 @@ def create_graph(session):
 def get_probabilities(rows, matrix):
     """
     Function that equally distribute probability of each vector.
-
     :param rows: amount of rows in matrix.
     :type rows: int.
     :param matrix: right array.
@@ -102,7 +98,6 @@ def _test_working_time(debug=False):
 def compute_pagerank():
     """
     Compute pagerank
-
     :returns bool - true if computed successfully, false if computation failed.
     """
     session = init_db()
@@ -120,7 +115,3 @@ def compute_pagerank():
     finally:
         session.commit()
     return success
-
-
-
-
