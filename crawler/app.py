@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--num-threads', help='count threads (defalut: 1)', type=int,
                         choices=range(1, MAX_COUNT_THREADS), default='1')
     parser.add_argument('-l', '--language', help=f'wikipedia language (default: {CHOICE_LANGUAGE[1]})', type=str,
-                        choices=CHOICE_LANGUAGE, default=CHOICE_LANGUAGE[0])
+                        choices=CHOICE_LANGUAGE, default=CHOICE_LANGUAGE[1])
     parser.add_argument('-o', '--output', help=f'output (default: {CHOICE_OUTPUT[1]})', type=str, choices=CHOICE_OUTPUT,
                         default=CHOICE_OUTPUT[0])
     parser.add_argument("-c", "--concurrency", type=int, default=multiprocessing.cpu_count(),

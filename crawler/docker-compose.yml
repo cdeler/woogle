@@ -2,7 +2,7 @@ version: '2'
 services:
   downloading:
     build: .
-    command: ["python","app.py",'-o','db','--loglevel','INFO','--concurrency','2','--host','0.0.0.0']
+    command: ["python","app.py",'-o','db','--concurrency','4','--host','0.0.0.0']
     networks:
       network:
         aliases:

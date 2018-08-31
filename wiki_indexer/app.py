@@ -2,7 +2,7 @@
 from flask import Flask, abort, request
 import configparser
 import connector
-import logging
+from pagerank import compute_pagerank
 
 
 application = Flask(__name__)
@@ -18,16 +18,15 @@ def get_tasks():
                                config['Elasticsearch']['doc_type'])
 
     if request.data.decode('ascii') == 'index':
+        print("Pagarank is calculating...")
+        compute_pagerank()
+        print("Pass data to elasticsearch.")
         conn.index()
-    elif request.data.decode('ascii') == 'delete':
-        print(request.data.decode('ascii'))
-        conn.delete_index()
     elif request.data.decode('ascii').isdigit():
         conn.index(request.data.decode('ascii'))
     else:
         return abort(400)
     return f'{request.data.decode("ascii")} is executed'
-
 
 
 if __name__ == '__main__':
