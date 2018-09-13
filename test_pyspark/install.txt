@@ -1,4 +1,0 @@
-./venv/bin/pyspark --packages graphframes:graphframes:0.6.0-spark2.3-s_2.11
-
-скопировать jar's из "Ivy Default Cache set to: /Users/nikitagold/.ivy2/jars" - строка из логов установки
-                  в venv/lib/python3.6/site-packages/pyspark/jars/

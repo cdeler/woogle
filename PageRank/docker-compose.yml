@@ -1,12 +1,16 @@
 version: "2"
 services:
   indexer:
-    container_name: indexer
+    container_name: spark_indexer
     build: .
     ports:
       - "9999:9999"
+      - "4040:4040"
+      - "4041:4041"
+      - "4042:4042"
+      - "4043:4043"
     volumes:
-       -  .:/code
+       -  .:/indexer
     networks:
       network:
         aliases:

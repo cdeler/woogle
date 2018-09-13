@@ -1,27 +1,22 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import logging
 
-try:
-    from scrapy.http import HtmlResponse
-except Exception:
-    pass
-import requests
-
-from models import Article, CrawlerStats, base
-
-DB_STRING = "postgres://postgres:password@postgres/crawler_bd"
+from src.models import Article, base
 
 
-def init_db():
-    db = create_engine(DB_STRING)
+def init_db(db_string):
+    """
 
-    Session = sessionmaker(db)
-    session = Session()
+    :return:
+    """
+    db = create_engine(db_string)
+    session_maker = sessionmaker(db)
+    session = session_maker()
     base.metadata.create_all(db)
     return session
 
-def get_rows(ses):
+
+def get_rows(session):
     """
     Function to get amount of rows in a table.
 
@@ -29,7 +24,7 @@ def get_rows(ses):
     :type session: sqlalchemy.session
     :returns: integer amount of rows in table
     """
-    return ses.query(Article).count()
+    return session.query(Article).count()
 
 
 def get_urls(session):
@@ -71,6 +66,27 @@ def update_page_rank(session, url, pagerank):
     :type pagerank: float
     :returns: None
     """
-    url = session.query(Article.page_rank).filter(Article.url == url).update({
+    session.query(Article.page_rank).filter(Article.url == url).update({
         'page_rank': pagerank
     })
+
+
+def get_table(session):
+    """
+    get all rows from database
+    :param session:
+    :return:
+    """
+    table = session.query(Article.id, Article.url, Article.links, Article.page_rank).filter(Article.state == "Complete")
+    return table
+
+
+def get_url_with_id(session):
+    """
+    get all id and url from table
+    :param session:
+    :return:
+    """
+    url = session.query(Article.id, Article.url)
+    res = [u for u in url]
+    return res

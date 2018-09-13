@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, MetaData, Table, engine
+from sqlalchemy import create_engine, MetaData, Table
 import asyncio
 import aiohttp
 
@@ -44,7 +44,7 @@ class Connector:
             self.meta = MetaData(self.engine)
             self.table = Table(table, self.meta, autoload=True)
         except Exception as e:
-            raise DatabaseConnectionError("Connection to databes has failed")
+            raise DatabaseConnectionError("Connection to databes has failed", e)
         self.elastic_index = elastic_index
         self.elastic_doc_type = elastic_doc_type
 
@@ -97,14 +97,13 @@ class Connector:
             result_set = conn.execute(select_statement)
         return result_set
 
-
     async def _index(self, row):
         """
         Method that send single requests to index service.
         :param row: sqlalchemy.RowProxy
         :return: None
         """
-        url = "http://rest_api:5000/reindex"
+        url = "http://127.0.0.1:5000/reindex"
         querystring = {
             "index": self.elastic_index,
             "doc_type": self.elastic_doc_type,
@@ -119,7 +118,6 @@ class Connector:
                     print(data)
             except aiohttp.client_exceptions.ClientOSError:
                 pass
-
 
     def index(self, id=None):
         """

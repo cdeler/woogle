@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, INTEGER, TEXT, VARCHAR, FLOAT, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 
 base = declarative_base()
@@ -13,6 +13,7 @@ class Article(base):
     links = Column(TEXT)
     page_rank = Column(FLOAT, default=0)
     state = Column(VARCHAR(20), default="waiting")
+
 
 class CrawlerStats(base):
     __tablename__ = 'crawler_stats'

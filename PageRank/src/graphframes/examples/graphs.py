@@ -19,7 +19,7 @@ import itertools
 
 from pyspark.sql import functions as sqlfunctions
 
-from graphframes import GraphFrame
+from src.graphframes import GraphFrame
 
 __all__ = ['Graphs']
 
