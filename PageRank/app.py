@@ -30,14 +30,20 @@ def get_dict_urls_from_db(session) -> list:
     return dict_links
 
 
-def create_vertices_edges(session) -> ([], []):
+def create_vertices_edges(session) -> (list, list):
     """
-
-    :return:
+    Downloading data from the database and preparing to create a dataframe
+    vertices consists of id and url
+    edges consist of the url and links-url
+        Example: [
+            ("url_main_page1", "url other page1"),
+            ("url_main_page1", "url other page2")
+        ]
+    :return: vertices(list) & edges(list)
     """
     urls = db_bind.get_url_with_id(session)
-    vertices = []
-    edges = []
+    vertices = list()
+    edges = list()
     for u in urls:
         tmp = (str(u[0]), u[1])
         vertices.append(tmp)
