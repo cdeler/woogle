@@ -1,0 +1,18 @@
+version: "2"
+services:
+  indexer:
+    container_name: indexer
+    build: .
+    ports:
+      - "9999:9999"
+    volumes:
+       -  .:/code
+    networks:
+      network:
+        aliases:
+          - indexer.network_elastic_backend
+
+networks:
+  network:
+    external:
+      name: network_elastic_backend
